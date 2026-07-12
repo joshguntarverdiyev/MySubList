@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#6C47D9",
+        "backgroundColor": "#7C4DFF",
         "foregroundImage": "./assets/icon.png"
       },
       "predictiveBackGestureEnabled": false

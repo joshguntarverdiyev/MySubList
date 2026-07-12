@@ -94,7 +94,7 @@ MySubList helps people track all their digital subscriptions in one place, see u
 
 ## 5. Design tokens
 
-**Colors:** Primary `#6C47D9` · Secondary `#8B5CF6` · Background `#F0EBFF` · Surface `#FFFFFF` · Text `#1A1A2E` · Muted `#6B7280` · Success `#10B981` · Error `#EF4444` · Warning/Trial `#F59E0B` · Dots: weekly `#EC4899`, monthly `#8B5CF6`, yearly `#EF4444`.
+**Colors:** Primary `#7C4DFF` · Secondary `#8B5CF6` · Background `#F0EBFF` · Surface `#FFFFFF` · Text `#1A1A2E` · Muted `#6B7280` · Success `#10B981` · Error `#EF4444` · Warning/Trial `#F59E0B` · Dots: weekly `#EC4899`, monthly `#8B5CF6`, yearly `#EF4444`.
 **Radius:** cards 16 · inputs/buttons 12 · pills 99. **Primary button height:** 56.
 **Spacing:** 4 / 8 / 12 / 16 / 24 / 32 / 48. **Font:** system (SF Pro / Roboto).
 **Icons:** Ionicons outlined, 22 lists / 24 nav; container circle `#EDE9F8`, 36×36, radius 10.

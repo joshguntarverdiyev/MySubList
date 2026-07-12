@@ -7,7 +7,7 @@ Design intelligence for every screen. Goal: clean, modern, premium, trustworthy 
 Define these in `tailwind.config.js` so classes read semantically. Never hardcode hex in components.
 
 ```
-colors:  primary #6C47D9 · secondary #8B5CF6 · background #F0EBFF · surface #FFFFFF
+colors:  primary #7C4DFF · secondary #8B5CF6 · background #F0EBFF · surface #FFFFFF
          text #1A1A2E · muted #6B7280 · success #10B981 · error #EF4444 · warning #F59E0B
          dot-weekly #EC4899 · dot-monthly #8B5CF6 · dot-yearly #EF4444 · icon-bg #EDE9F8
 radius:  card 16 (rounded-2xl) · input/button 12 (rounded-xl) · pill 99 (rounded-full)

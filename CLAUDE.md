@@ -76,7 +76,7 @@ src/utils/        date math, currency formatting, renewal calc
 **Colors**
 | Token | Hex |
 |---|---|
-| Primary | `#6C47D9` |
+| Primary | `#7C4DFF` |
 | Secondary | `#8B5CF6` |
 | Background | `#F0EBFF` |
 | Surface / Card | `#FFFFFF` |
@@ -100,7 +100,7 @@ src/utils/        date math, currency formatting, renewal calc
 
 ## Assets
 
-- App icon: `assets/icon.png` (1024²) · Splash: `assets/splash.png`, bg `#6C47D9`
+- App icon: `assets/icon.png` (1024²) · Splash: `assets/splash.png`, bg `#7C4DFF`
 - Logo: `assets/logo.png`, `assets/logo.svg`
 - Welcome 3D icons: `assets/welcome-screen/`
 - Brand SVGs: `assets/brands/` (spotify, netflix, youtube, etc.)

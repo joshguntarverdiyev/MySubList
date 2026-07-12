@@ -8,7 +8,7 @@ const logo = require('../../assets/logo.png');
 // TODO: once onboarding/auth/tabs exist, redirect from here based on session.
 export default function Index() {
   return (
-    <View className="flex-1 items-center justify-center bg-splash">
+    <View className="flex-1 items-center justify-center bg-primary">
       <StatusBar style="light" />
       <Image
         source={logo}
