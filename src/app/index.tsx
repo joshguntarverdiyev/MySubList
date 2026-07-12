@@ -1,12 +1,18 @@
+import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
 const logo = require('../../assets/logo.png');
 
-// Splash screen (screen 1) — branded loading screen shown on app open.
-// TODO: once onboarding/auth/tabs exist, redirect from here based on session.
+// Splash screen — shows for 1.5s then routes to welcome (or auth/tabs once built).
 export default function Index() {
+  useEffect(() => {
+    const t = setTimeout(() => router.replace('/(onboarding)/welcome' as any), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <View className="flex-1 items-center justify-center bg-primary">
       <StatusBar style="light" />
