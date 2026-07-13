@@ -1,0 +1,52 @@
+import { View, Text } from 'react-native'
+import { Image } from 'expo-image'
+
+export default function SpendCard() {
+  return (
+    <View
+      className="bg-white rounded-[24px] mx-6 px-6 pt-5 pb-4"
+      style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 32, elevation: 6 }}
+    >
+      {/* Top row: label + chart thumbnail */}
+      <View className="flex-row items-start justify-between mb-1">
+        <View className="flex-1">
+          <Text className="text-sm text-[#6B7280] mb-1">Total Spend (Yearly)</Text>
+          <Text className="text-[32px] font-bold text-[#1A1A2E] tracking-tight">€ 311.50</Text>
+        </View>
+        <View className="bg-[#F6F1FD] rounded-xl w-[68px] h-[64px] items-center justify-center">
+          <Image
+            source={require('../../../assets/home-screen/chart.png')}
+            style={{ width: 44, height: 30 }}
+            contentFit="contain"
+          />
+        </View>
+      </View>
+
+      {/* Divider */}
+      <View className="h-px bg-[#E5E7EB] my-4" />
+
+      {/* Bottom row: monthly spend | active subs */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+        <View style={{ flex: 1, alignItems: 'flex-start' }}>
+          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }}>Monthly Spend</Text>
+          <Text style={{ fontSize: 17, fontWeight: '600', color: '#1A1A2E' }}>€ 42.90</Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <View style={{ alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }} numberOfLines={1}>
+              Active Subscriptions
+            </Text>
+            <Text style={{ fontSize: 17, fontWeight: '600', color: '#1A1A2E' }}>3</Text>
+          </View>
+        </View>
+        {/* Divider overlaid at the card's true horizontal center */}
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <View style={{ width: 1, height: 36, backgroundColor: '#E5E7EB' }} />
+        </View>
+      </View>
+    </View>
+  )
+}
