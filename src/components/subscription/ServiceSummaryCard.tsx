@@ -1,19 +1,11 @@
 import { View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import type { Subscription } from '@/types/subscription'
-import { POPULAR_SERVICES } from '@/constants/services'
+import { getBrandVisual } from '@/utils/brand'
 import { computeTotalPaid, formatLongDate } from '@/utils/subscriptionStats'
 
-function brandVisual(sub: Subscription) {
-  const match = POPULAR_SERVICES.find((s) => s.brandKey === sub.brand_key)
-  return {
-    color: sub.color ?? match?.color ?? '#7C4DFF',
-    initial: (match?.initial ?? sub.name.charAt(0) ?? '?').toUpperCase(),
-  }
-}
-
 export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
-  const { color, initial } = brandVisual(sub)
+  const { color, initial } = getBrandVisual(sub.brand_key, sub.name, sub.color)
   const website = sub.brand_key ? `${sub.brand_key}.com` : null
 
   return (

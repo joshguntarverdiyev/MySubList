@@ -1,20 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { router } from 'expo-router'
-
-interface UpcomingItem {
-  id: string
-  name: string
-  daysLabel: string
-  price: string
-  color: string
-  initial: string
-}
-
-const UPCOMING: UpcomingItem[] = [
-  { id: '1', name: 'Figma',         daysLabel: 'Today',  price: '€ 14.99', color: '#7C4DFF', initial: 'F' },
-  { id: '2', name: 'Netflix',       daysLabel: '3 Days', price: '€ 6.99',  color: '#E50914', initial: 'N' },
-  { id: '3', name: 'Amazon Prime',  daysLabel: '7 Days', price: '€ 20.00', color: '#00A8E0', initial: 'A' },
-]
+import type { UpcomingItem } from '@/utils/homeDisplay'
 
 function UpcomingCard({ item }: { item: UpcomingItem }) {
   return (
@@ -49,7 +35,8 @@ function UpcomingCard({ item }: { item: UpcomingItem }) {
   )
 }
 
-export default function UpcomingPayments() {
+export default function UpcomingPayments({ items }: { items: UpcomingItem[] }) {
+  if (items.length === 0) return null
   return (
     <View>
       <Text className="text-[20px] font-bold text-[#1A1A2E] mb-4 px-6">Upcoming Payments</Text>
@@ -58,7 +45,7 @@ export default function UpcomingPayments() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       >
-        {UPCOMING.map(item => <UpcomingCard key={item.id} item={item} />)}
+        {items.map(item => <UpcomingCard key={item.id} item={item} />)}
       </ScrollView>
     </View>
   )

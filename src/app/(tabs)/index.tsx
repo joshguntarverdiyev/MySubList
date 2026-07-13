@@ -1,21 +1,41 @@
+import { useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
+import { useUserId } from '@/hooks/useUserId'
+import { useSubscriptionStore } from '@/store/subscriptionStore'
+import {
+  getUpcomingPayments, calculateTotalPaid,
+  calculateMonthlySpend, calculatePotentialSavings,
+} from '@/services/subscriptions'
+import { toRowItem, toUpcomingItem } from '@/utils/homeDisplay'
+import { formatCurrency } from '@/utils/currency'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
 import UpcomingPayments from '@/components/home/UpcomingPayments'
-import SubscriptionRow, { SubscriptionItem } from '@/components/home/SubscriptionRow'
-
-const SUBSCRIPTIONS: SubscriptionItem[] = [
-  { id: '1', name: 'Google One',    category: 'Storage',   price: '€19.99', period: 'yearly',  color: '#4285F4', initial: 'G' },
-  { id: '2', name: 'Amazon Prime',  category: 'Shopping',  price: '€12.00', period: 'month',   color: '#00A8E0', initial: 'A' },
-  { id: '3', name: 'Netflix',       category: 'Streaming', price: '€6.99',  period: 'weekly',  color: '#E50914', initial: 'N' },
-]
+import SubscriptionRow from '@/components/home/SubscriptionRow'
+import HomeSkeleton from '@/components/home/HomeSkeleton'
+import EmptyState from '@/components/home/EmptyState'
+import ErrorState from '@/components/home/ErrorState'
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets()
+  const userId = useUserId()
+  const { subscriptions, isLoading, error, fetchSubscriptions } = useSubscriptionStore()
+
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) fetchSubscriptions(userId)
+    }, [userId, fetchSubscriptions])
+  )
+
+  const currency = subscriptions[0]?.currency ?? 'EUR'
+  const totalPaid = formatCurrency(calculateTotalPaid(subscriptions), currency)
+  const monthlySpend = formatCurrency(calculateMonthlySpend(subscriptions), currency)
+  const savings = calculatePotentialSavings(subscriptions)
+  const upcoming = getUpcomingPayments(subscriptions).map(toUpcomingItem)
 
   return (
     <View className="flex-1 bg-[#F0EBFF]">
@@ -45,40 +65,49 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Total Spend Card */}
-        <SpendCard />
+        {isLoading && subscriptions.length === 0 ? (
+          <HomeSkeleton />
+        ) : error ? (
+          <ErrorState onRetry={() => userId && fetchSubscriptions(userId)} />
+        ) : subscriptions.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            <SpendCard totalPaid={totalPaid} monthlySpend={monthlySpend} activeCount={subscriptions.length} />
 
-        {/* Potential Savings Card */}
-        <View className="mt-4">
-          <SavingsCard />
-        </View>
-
-        {/* Upcoming Payments */}
-        <View className="mt-6">
-          <UpcomingPayments />
-        </View>
-
-        {/* All Subscriptions */}
-        <View className="mt-6 px-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-[20px] font-bold text-[#1A1A2E]">All Subscriptions</Text>
-            <TouchableOpacity>
-              <Text className="text-[15px] font-semibold text-[#7C4DFF]">See all</Text>
-            </TouchableOpacity>
-          </View>
-          <View
-            className="bg-white rounded-[22px] overflow-hidden"
-            style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
-          >
-            {SUBSCRIPTIONS.map((item, index) => (
-              <SubscriptionRow
-                key={item.id}
-                item={item}
-                isLast={index === SUBSCRIPTIONS.length - 1}
+            <View className="mt-4">
+              <SavingsCard
+                amount={formatCurrency(savings.amount / 12, currency)}
+                opportunities={savings.trialCount + savings.switchCount}
               />
-            ))}
-          </View>
-        </View>
+            </View>
+
+            <View className="mt-6">
+              <UpcomingPayments items={upcoming} />
+            </View>
+
+            <View className="mt-6 px-6">
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-[20px] font-bold text-[#1A1A2E]">All Subscriptions</Text>
+                <TouchableOpacity>
+                  <Text className="text-[15px] font-semibold text-[#7C4DFF]">See all</Text>
+                </TouchableOpacity>
+              </View>
+              <View
+                className="bg-white rounded-[22px] overflow-hidden"
+                style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
+              >
+                {subscriptions.map((sub, index) => (
+                  <SubscriptionRow
+                    key={sub.id}
+                    item={toRowItem(sub)}
+                    isLast={index === subscriptions.length - 1}
+                  />
+                ))}
+              </View>
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   )

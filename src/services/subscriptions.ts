@@ -1,0 +1,61 @@
+import { differenceInCalendarDays, parseISO } from 'date-fns'
+import { supabase } from '@/lib/supabase'
+import type { Subscription } from '@/types/subscription'
+import { computeTotalPaid } from '@/utils/subscriptionStats'
+
+const MONTHLY_FACTOR: Record<Subscription['billing_period'], number> = {
+  weekly: 4.33, monthly: 1, yearly: 1 / 12, once: 0,
+}
+
+export async function getUserSubscriptions(userId: string): Promise<Subscription[]> {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Subscription[]
+}
+
+/** Subscriptions renewing within the next 30 days, soonest first, max 10. */
+export function getUpcomingPayments(subscriptions: Subscription[]): Subscription[] {
+  const today = new Date()
+  return subscriptions
+    .filter((s) => {
+      if (!s.next_renewal_date) return false
+      const days = differenceInCalendarDays(parseISO(s.next_renewal_date), today)
+      return days >= 0 && days <= 30
+    })
+    .sort((a, b) => parseISO(a.next_renewal_date!).getTime() - parseISO(b.next_renewal_date!).getTime())
+    .slice(0, 10)
+}
+
+/** Actual total paid so far across all subscriptions (sum of per-sub paid). */
+export function calculateTotalPaid(subscriptions: Subscription[]): number {
+  return subscriptions.reduce((sum, s) => sum + computeTotalPaid(s), 0)
+}
+
+export function calculateMonthlySpend(subscriptions: Subscription[]): number {
+  return subscriptions.reduce((sum, s) => sum + s.price * MONTHLY_FACTOR[s.billing_period], 0)
+}
+
+export interface PotentialSavings {
+  amount: number
+  trialCount: number
+  switchCount: number
+}
+
+export function calculatePotentialSavings(subscriptions: Subscription[]): PotentialSavings {
+  const today = new Date()
+  const trialCount = subscriptions.filter((s) => {
+    if (!s.is_free_trial || !s.trial_end_date) return false
+    const days = differenceInCalendarDays(parseISO(s.trial_end_date), today)
+    return days >= 0 && days <= 30
+  }).length
+  const monthlySubs = subscriptions.filter((s) => s.billing_period === 'monthly')
+  const switchCount = monthlySubs.length
+  // Rough estimate: switching monthly -> yearly typically saves ~2 months/year.
+  const amount = monthlySubs.reduce((sum, s) => sum + s.price * 2, 0)
+  return { amount, trialCount, switchCount }
+}

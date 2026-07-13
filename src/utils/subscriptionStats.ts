@@ -1,31 +1,27 @@
 import {
-  differenceInCalendarWeeks, differenceInCalendarMonths,
-  differenceInCalendarYears, format, parseISO,
+  differenceInWeeks, differenceInMonths,
+  differenceInYears, format, parseISO,
 } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
 
 /**
- * Total amount paid so far = price × number of billing cycles elapsed
- * since the start date (counting the initial payment). One-time = price.
+ * Actual amount paid so far = number of complete billing periods elapsed
+ * since the start date × price (minimum one period). One-time = price.
+ * Single source of truth for both Home and Subscription Details.
  */
 export function computeTotalPaid(sub: Subscription): number {
   const start = parseISO(sub.start_date)
   const now = new Date()
-  let cycles: number
   switch (sub.billing_period) {
     case 'weekly':
-      cycles = differenceInCalendarWeeks(now, start)
-      break
+      return Math.max(1, differenceInWeeks(now, start)) * sub.price
     case 'monthly':
-      cycles = differenceInCalendarMonths(now, start)
-      break
+      return Math.max(1, differenceInMonths(now, start)) * sub.price
     case 'yearly':
-      cycles = differenceInCalendarYears(now, start)
-      break
+      return Math.max(1, differenceInYears(now, start)) * sub.price
     case 'once':
       return sub.price
   }
-  return sub.price * (Math.max(0, cycles) + 1)
 }
 
 /** Format an ISO date string as "Jun 24, 2025". */

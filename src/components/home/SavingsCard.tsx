@@ -1,7 +1,12 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Image } from 'expo-image'
 
-export default function SavingsCard() {
+interface SavingsCardProps {
+  amount: string
+  opportunities: number
+}
+
+export default function SavingsCard({ amount, opportunities }: SavingsCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -13,10 +18,12 @@ export default function SavingsCard() {
         <View className="flex-1 pr-2">
           <Text className="text-[18px] font-bold text-[#7C4DFF] mb-1">Potential Savings</Text>
           <View className="flex-row items-baseline gap-x-1 mb-1">
-            <Text className="text-[18px] font-bold text-[#1A1A2E]">Save €18.50</Text>
+            <Text className="text-[18px] font-bold text-[#1A1A2E]">Save {amount}</Text>
             <Text className="text-xs text-[#667085]">/ month</Text>
           </View>
-          <Text className="text-xs text-[#6B7280] mb-3">Based on 3 opportunities</Text>
+          <Text className="text-xs text-[#6B7280] mb-3">
+            Based on {opportunities} {opportunities === 1 ? 'opportunity' : 'opportunities'}
+          </Text>
           <Text className="text-[10px] text-[#9CA3AF]">Tap to see more</Text>
         </View>
 
