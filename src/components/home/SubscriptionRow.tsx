@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 
 export interface SubscriptionItem {
   id: string
@@ -19,7 +20,11 @@ interface Props {
 export default function SubscriptionRow({ item, isLast }: Props) {
   return (
     <>
-      <TouchableOpacity className="flex-row items-center px-4 py-3" activeOpacity={0.7}>
+      <TouchableOpacity
+        className="flex-row items-center px-4 py-3"
+        activeOpacity={0.7}
+        onPress={() => router.push(`/subscription/${item.id}` as any)}
+      >
         {/* Brand logo placeholder */}
         <View
           className="rounded-xl w-[42px] h-[42px] items-center justify-center mr-4"

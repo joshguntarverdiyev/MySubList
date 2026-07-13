@@ -1,4 +1,5 @@
-import { View, Text, ScrollView } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { router } from 'expo-router'
 
 interface UpcomingItem {
   id: string
@@ -17,7 +18,9 @@ const UPCOMING: UpcomingItem[] = [
 
 function UpcomingCard({ item }: { item: UpcomingItem }) {
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => router.push(`/subscription/${item.id}` as any)}
       className="bg-white rounded-xl mr-3"
       style={{ minWidth: 140, shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
     >
@@ -42,7 +45,7 @@ function UpcomingCard({ item }: { item: UpcomingItem }) {
       <View className="px-4 py-3">
         <Text className="text-[17px] font-semibold text-[#1A1A2E]">{item.price}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 
