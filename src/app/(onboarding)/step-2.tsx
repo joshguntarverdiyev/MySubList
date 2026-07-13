@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, Text, View } from 'react-native';
@@ -13,7 +14,10 @@ export default function OnboardingStep2() {
 
       {/* Skip — top right */}
       <Pressable
-        onPress={() => router.replace('/(auth)/sign-up' as any)}
+        onPress={async () => {
+          await SecureStore.setItemAsync('onboarding_complete', 'true');
+          router.replace('/(auth)/sign-up' as any);
+        }}
         hitSlop={12}
         className="absolute right-6 z-10"
         style={{ top: insets.top + 18 }}
