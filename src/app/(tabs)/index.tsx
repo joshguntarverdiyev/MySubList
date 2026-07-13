@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
 import UpcomingPayments from '@/components/home/UpcomingPayments'
@@ -35,6 +36,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <TouchableOpacity
+            onPress={() => router.push('/subscription/add' as any)}
             className="w-10 h-10 rounded-full bg-[#7C4DFF] items-center justify-center"
             style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }}
             activeOpacity={0.85}
