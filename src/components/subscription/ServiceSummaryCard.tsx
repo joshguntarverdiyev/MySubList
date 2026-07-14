@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons'
 import type { Subscription } from '@/types/subscription'
 import { getBrandVisual } from '@/utils/brand'
 import { computeTotalPaid, formatLongDate } from '@/utils/subscriptionStats'
+import { formatCurrency } from '@/utils/currency'
 
 export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
   const { color, initial } = getBrandVisual(sub.brand_key, sub.name, sub.color)
@@ -49,7 +50,7 @@ export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
         <View className="flex-1">
           <Text className="text-[13px] text-[#667085] mb-1">Total Paid</Text>
           <Text className="text-[26px] font-bold text-[#7C4DFF]">
-            {sub.currency === 'EUR' ? '€' : ''}{computeTotalPaid(sub).toFixed(2)}
+            {formatCurrency(computeTotalPaid(sub), sub.currency)}
           </Text>
         </View>
         <View className="w-px h-12 bg-[#E5E7EB] mx-4" />
