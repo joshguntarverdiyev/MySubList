@@ -40,6 +40,18 @@ export function calculateMonthlySpend(subscriptions: Subscription[]): number {
   return subscriptions.reduce((sum, s) => sum + s.price * MONTHLY_FACTOR[s.billing_period], 0)
 }
 
+/** Subscriptions on a free trial ending within the next 30 days, soonest first. */
+export function getTrialsEndingSoon(subscriptions: Subscription[]): Subscription[] {
+  const today = new Date()
+  return subscriptions
+    .filter((s) => {
+      if (!s.is_free_trial || !s.trial_end_date) return false
+      const days = differenceInCalendarDays(parseISO(s.trial_end_date), today)
+      return days >= 0 && days <= 30
+    })
+    .sort((a, b) => parseISO(a.trial_end_date!).getTime() - parseISO(b.trial_end_date!).getTime())
+}
+
 export interface PotentialSavings {
   amount: number
   trialCount: number
@@ -47,12 +59,7 @@ export interface PotentialSavings {
 }
 
 export function calculatePotentialSavings(subscriptions: Subscription[]): PotentialSavings {
-  const today = new Date()
-  const trialCount = subscriptions.filter((s) => {
-    if (!s.is_free_trial || !s.trial_end_date) return false
-    const days = differenceInCalendarDays(parseISO(s.trial_end_date), today)
-    return days >= 0 && days <= 30
-  }).length
+  const trialCount = getTrialsEndingSoon(subscriptions).length
   const monthlySubs = subscriptions.filter((s) => s.billing_period === 'monthly')
   const switchCount = monthlySubs.length
   // Rough estimate: switching monthly -> yearly typically saves ~2 months/year.

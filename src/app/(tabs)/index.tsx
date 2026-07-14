@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
@@ -14,6 +14,7 @@ import { toRowItem, toUpcomingItem } from '@/utils/homeDisplay'
 import { formatCurrency } from '@/utils/currency'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
+import SavingsModal from '@/components/home/SavingsModal'
 import UpcomingPayments from '@/components/home/UpcomingPayments'
 import SubscriptionRow from '@/components/home/SubscriptionRow'
 import HomeSkeleton from '@/components/home/HomeSkeleton'
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const userId = useUserId()
   const { subscriptions, isLoading, error, fetchSubscriptions } = useSubscriptionStore()
+  const [savingsOpen, setSavingsOpen] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -79,6 +81,7 @@ export default function HomeScreen() {
               <SavingsCard
                 amount={formatCurrency(savings.amount / 12, currency)}
                 opportunities={savings.trialCount + savings.switchCount}
+                onPress={() => setSavingsOpen(true)}
               />
             </View>
 
@@ -109,6 +112,13 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
+
+      <SavingsModal
+        visible={savingsOpen}
+        onClose={() => setSavingsOpen(false)}
+        subscriptions={subscriptions}
+        currency={currency}
+      />
     </View>
   )
 }

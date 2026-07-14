@@ -4,11 +4,13 @@ import { Image } from 'expo-image'
 interface SavingsCardProps {
   amount: string
   opportunities: number
+  onPress?: () => void
 }
 
-export default function SavingsCard({ amount, opportunities }: SavingsCardProps) {
+export default function SavingsCard({ amount, opportunities, onPress }: SavingsCardProps) {
   return (
     <TouchableOpacity
+      onPress={onPress}
       activeOpacity={0.85}
       className="mx-6 rounded-[24px] border border-[#E6D9FF] overflow-hidden"
       style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 5 }}
