@@ -52,7 +52,7 @@ export default function SubscriptionDetails() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }}
       >
-        <DetailHeader onDelete={deleteSubscription} />
+        <DetailHeader onDelete={deleteSubscription} onEdit={() => router.push(`/subscription/edit/${id}` as any)} />
         <ServiceSummaryCard sub={sub} />
 
         <View

@@ -5,15 +5,41 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useSubscriptionForm } from '@/hooks/useSubscriptionForm'
-import { useProfileStore } from '@/store/profileStore'
 import SubscriptionFormFields from '@/components/subscription/SubscriptionFormFields'
 
-export default function NewSubscription() {
+export default function EditSubscription() {
   const insets = useSafeAreaInsets()
-  const params = useLocalSearchParams<{ name?: string; brandKey?: string }>()
-  const profileCurrency = useProfileStore((s) => s.currency)
-  const f = useSubscriptionForm({ initialName: params.name ?? '', brandKey: params.brandKey, initialCurrency: profileCurrency })
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const { subscription: sub, loading, notFound } = useSubscription(id)
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-[#F0EBFF] items-center justify-center">
+        <ActivityIndicator color="#7C4DFF" />
+      </View>
+    )
+  }
+
+  if (notFound || !sub) {
+    return (
+      <View className="flex-1 bg-[#F0EBFF] items-center justify-center px-8" style={{ paddingTop: insets.top }}>
+        <Text className="text-[16px] text-[#6B7280] text-center mb-4">
+          This subscription could not be found.
+        </Text>
+        <TouchableOpacity onPress={() => router.back()} className="bg-[#7C4DFF] rounded-full px-6 py-3">
+          <Text className="text-white font-semibold">Go back</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  return <EditForm sub={sub} insets={insets} />
+}
+
+function EditForm({ sub, insets }: { sub: NonNullable<ReturnType<typeof useSubscription>['subscription']>; insets: { top: number; bottom: number } }) {
+  const f = useSubscriptionForm({ subscription: sub })
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-[#F0EBFF]" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -30,7 +56,7 @@ export default function NewSubscription() {
           >
             <Ionicons name="arrow-back" size={22} color="#7C4DFF" />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-[24px] font-bold text-[#111827] mr-11">Entry Details</Text>
+          <Text className="flex-1 text-center text-[24px] font-bold text-[#111827] mr-11">Edit Subscription</Text>
         </View>
 
         <SubscriptionFormFields f={f} />
@@ -49,8 +75,8 @@ export default function NewSubscription() {
             <ActivityIndicator color="#FFFFFF" />
           ) : (
             <>
-              <Ionicons name="add" size={24} color="#FFFFFF" />
-              <Text className="text-white text-[18px] font-semibold ml-1">Add Subscription</Text>
+              <Ionicons name="checkmark" size={24} color="#FFFFFF" />
+              <Text className="text-white text-[18px] font-semibold ml-1">Save Changes</Text>
             </>
           )}
         </TouchableOpacity>

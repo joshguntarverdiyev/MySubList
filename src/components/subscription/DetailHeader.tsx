@@ -4,9 +4,10 @@ import { router } from 'expo-router'
 
 interface DetailHeaderProps {
   onDelete: () => Promise<boolean>
+  onEdit: () => void
 }
 
-export default function DetailHeader({ onDelete }: DetailHeaderProps) {
+export default function DetailHeader({ onDelete, onEdit }: DetailHeaderProps) {
   const confirmDelete = () => {
     Alert.alert(
       'Delete subscription',
@@ -28,7 +29,7 @@ export default function DetailHeader({ onDelete }: DetailHeaderProps) {
 
   const openMenu = () => {
     Alert.alert('Options', undefined, [
-      { text: 'Edit', onPress: () => Alert.alert('Coming soon', 'Editing is coming in a future update.') },
+      { text: 'Edit', onPress: onEdit },
       { text: 'Delete', style: 'destructive', onPress: confirmDelete },
       { text: 'Cancel', style: 'cancel' },
     ])

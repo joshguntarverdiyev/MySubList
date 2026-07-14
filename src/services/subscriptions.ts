@@ -2,6 +2,10 @@ import { differenceInCalendarDays, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { Subscription } from '@/types/subscription'
 import { computeTotalPaid } from '@/utils/subscriptionStats'
+import type { Converter } from '@/utils/convert'
+
+/** Default converter: no conversion (1:1), used when rates aren't available. */
+const identity: Converter = (amount) => amount
 
 const MONTHLY_FACTOR: Record<Subscription['billing_period'], number> = {
   weekly: 4.33, monthly: 1, yearly: 1 / 12, once: 0,
@@ -32,12 +36,12 @@ export function getUpcomingPayments(subscriptions: Subscription[]): Subscription
 }
 
 /** Actual total paid so far across all subscriptions (sum of per-sub paid). */
-export function calculateTotalPaid(subscriptions: Subscription[]): number {
-  return subscriptions.reduce((sum, s) => sum + computeTotalPaid(s), 0)
+export function calculateTotalPaid(subscriptions: Subscription[], convert: Converter = identity): number {
+  return subscriptions.reduce((sum, s) => sum + convert(computeTotalPaid(s), s.currency), 0)
 }
 
-export function calculateMonthlySpend(subscriptions: Subscription[]): number {
-  return subscriptions.reduce((sum, s) => sum + s.price * MONTHLY_FACTOR[s.billing_period], 0)
+export function calculateMonthlySpend(subscriptions: Subscription[], convert: Converter = identity): number {
+  return subscriptions.reduce((sum, s) => sum + convert(s.price * MONTHLY_FACTOR[s.billing_period], s.currency), 0)
 }
 
 /** Subscriptions on a free trial ending within the next 30 days, soonest first. */
@@ -58,11 +62,11 @@ export interface PotentialSavings {
   switchCount: number
 }
 
-export function calculatePotentialSavings(subscriptions: Subscription[]): PotentialSavings {
+export function calculatePotentialSavings(subscriptions: Subscription[], convert: Converter = identity): PotentialSavings {
   const trialCount = getTrialsEndingSoon(subscriptions).length
   const monthlySubs = subscriptions.filter((s) => s.billing_period === 'monthly')
   const switchCount = monthlySubs.length
   // Rough estimate: switching monthly -> yearly typically saves ~2 months/year.
-  const amount = monthlySubs.reduce((sum, s) => sum + s.price * 2, 0)
+  const amount = monthlySubs.reduce((sum, s) => sum + convert(s.price * 2, s.currency), 0)
   return { amount, trialCount, switchCount }
 }

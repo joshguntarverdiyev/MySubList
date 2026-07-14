@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { router } from 'expo-router'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { BillingPeriod } from '@/constants/subscriptionOptions'
+import type { Subscription } from '@/types/subscription'
 import { computeNextRenewalDate } from '@/utils/renewal'
+import { useSubscriptionStore } from '@/store/subscriptionStore'
 
 interface FormErrors {
   name?: string
@@ -11,15 +13,27 @@ interface FormErrors {
   date?: string
 }
 
-export function useSubscriptionForm(initialName: string, brandKey?: string) {
-  const [name, setName] = useState(initialName)
-  const [plan, setPlan] = useState('')
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [price, setPrice] = useState('')
-  const [currency, setCurrency] = useState('EUR')
-  const [period, setPeriod] = useState<BillingPeriod>('monthly')
-  const [method, setMethod] = useState<string | null>(null)
-  const [freeTrial, setFreeTrial] = useState(false)
+interface UseSubscriptionFormOptions {
+  subscription?: Subscription
+  initialName?: string
+  initialCurrency?: string
+  brandKey?: string
+}
+
+export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
+  const { subscription, initialName, initialCurrency, brandKey } = options
+  const isEdit = !!subscription
+
+  const [name, setName] = useState(subscription?.name ?? initialName ?? '')
+  const [plan, setPlan] = useState(subscription?.plan_name ?? '')
+  const [startDate, setStartDate] = useState<Date | null>(
+    subscription?.start_date ? parseISO(subscription.start_date) : null
+  )
+  const [price, setPrice] = useState(subscription ? String(subscription.price) : '')
+  const [currency, setCurrency] = useState(subscription?.currency ?? initialCurrency ?? 'EUR')
+  const [period, setPeriod] = useState<BillingPeriod>(subscription?.billing_period ?? 'monthly')
+  const [method, setMethod] = useState<string | null>(subscription?.payment_method ?? null)
+  const [freeTrial, setFreeTrial] = useState(subscription?.is_free_trial ?? false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,15 +50,14 @@ export function useSubscriptionForm(initialName: string, brandKey?: string) {
     setApiError('')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      setApiError('You must be signed in to add a subscription.')
+      setApiError(`You must be signed in to ${isEdit ? 'edit' : 'add'} a subscription.`)
       setLoading(false)
       return
     }
-    const { error } = await supabase.from('subscriptions').insert({
-      user_id: user.id,
+
+    const fields = {
       name: name.trim(),
       plan_name: plan.trim() || null,
-      brand_key: brandKey || null,
       price: parseFloat(price),
       currency,
       billing_period: period,
@@ -52,6 +65,29 @@ export function useSubscriptionForm(initialName: string, brandKey?: string) {
       next_renewal_date: computeNextRenewalDate(startDate!, period),
       payment_method: method,
       is_free_trial: freeTrial,
+    }
+
+    if (isEdit) {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ ...fields, updated_at: new Date().toISOString() })
+        .eq('id', subscription!.id)
+        .eq('user_id', user.id)
+      setLoading(false)
+      if (error) {
+        setApiError('Could not save changes. Please try again.')
+        return
+      }
+      await useSubscriptionStore.getState().refreshSubscriptions(user.id)
+      // Replace so the Details screen remounts and reloads with fresh data.
+      router.replace(`/subscription/${subscription!.id}` as any)
+      return
+    }
+
+    const { error } = await supabase.from('subscriptions').insert({
+      ...fields,
+      user_id: user.id,
+      brand_key: brandKey || null,
       is_active: true,
     })
     setLoading(false)

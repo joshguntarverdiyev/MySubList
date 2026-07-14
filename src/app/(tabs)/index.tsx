@@ -6,12 +6,15 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import { useUserId } from '@/hooks/useUserId'
 import { useSubscriptionStore } from '@/store/subscriptionStore'
+import { useProfileStore } from '@/store/profileStore'
+import { useRatesStore } from '@/store/ratesStore'
 import {
   getUpcomingPayments, calculateTotalPaid,
   calculateMonthlySpend, calculatePotentialSavings,
 } from '@/services/subscriptions'
 import { toRowItem, toUpcomingItem } from '@/utils/homeDisplay'
 import { formatCurrency } from '@/utils/currency'
+import { makeConverter } from '@/utils/convert'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
 import SavingsModal from '@/components/home/SavingsModal'
@@ -25,6 +28,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const userId = useUserId()
   const { subscriptions, isLoading, error, fetchSubscriptions } = useSubscriptionStore()
+  const currency = useProfileStore((s) => s.currency)
+  const fetchProfile = useProfileStore((s) => s.fetchProfile)
+  const rates = useRatesStore((s) => s.rates)
+  const ratesDate = useRatesStore((s) => s.date)
+  const ratesLoaded = useRatesStore((s) => s.loaded)
+  const fetchRates = useRatesStore((s) => s.fetchRates)
   const [savingsOpen, setSavingsOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
@@ -32,14 +41,22 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (userId) fetchSubscriptions(userId)
-    }, [userId, fetchSubscriptions])
+      if (userId) {
+        fetchSubscriptions(userId)
+        fetchProfile(userId)
+        fetchRates()
+      }
+    }, [userId, fetchSubscriptions, fetchProfile, fetchRates])
   )
 
-  const currency = subscriptions[0]?.currency ?? 'EUR'
-  const totalPaid = formatCurrency(calculateTotalPaid(subscriptions), currency)
-  const monthlySpend = formatCurrency(calculateMonthlySpend(subscriptions), currency)
-  const savings = calculatePotentialSavings(subscriptions)
+  const convert = makeConverter(rates, currency)
+  const totalPaid = formatCurrency(calculateTotalPaid(subscriptions, convert), currency)
+  const monthlySpend = formatCurrency(calculateMonthlySpend(subscriptions, convert), currency)
+  const savings = calculatePotentialSavings(subscriptions, convert)
+
+  // Only note conversion when a sub is in a currency other than the profile's.
+  const hasForeignCurrency = subscriptions.some((s) => s.currency !== currency)
+  const spendNote = hasForeignCurrency ? (ratesLoaded && ratesDate ? `rates as of ${ratesDate}` : 'approx.') : null
   const upcoming = getUpcomingPayments(subscriptions).map(toUpcomingItem)
 
   const VISIBLE_LIMIT = 4
@@ -88,7 +105,7 @@ export default function HomeScreen() {
           <EmptyState />
         ) : (
           <>
-            <SpendCard totalPaid={totalPaid} monthlySpend={monthlySpend} activeCount={subscriptions.length} />
+            <SpendCard totalPaid={totalPaid} monthlySpend={monthlySpend} activeCount={subscriptions.length} note={spendNote} />
 
             <View className="mt-4">
               <SavingsCard
