@@ -1,4 +1,4 @@
-import { Modal, View, Text, ScrollView, TouchableOpacity, Pressable } from 'react-native'
+import { Modal, View, Text, ScrollView, TouchableOpacity, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { differenceInCalendarDays, parseISO } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
@@ -20,17 +20,16 @@ const TIPS = [
 ]
 
 export default function SavingsModal({ visible, onClose, subscriptions, currency }: SavingsModalProps) {
+  const { height } = useWindowDimensions()
   const trials = getTrialsEndingSoon(subscriptions)
   const monthly = subscriptions.filter((s) => s.billing_period === 'monthly')
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable className="flex-1 bg-black/40 justify-end" onPress={onClose}>
-        <Pressable
-          className="bg-white rounded-t-[24px] p-6"
-          style={{ maxHeight: '80%' }}
-          onPress={(e) => e.stopPropagation()}
-        >
+      <View className="flex-1 bg-black/40 justify-end">
+        {/* Dismiss layer behind the sheet — keeps scroll gestures out of a Pressable */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View className="bg-white rounded-t-[24px] p-6">
           {/* Header */}
           <View className="flex-row items-start justify-between mb-5">
             <View className="flex-1 pr-3">
@@ -46,7 +45,11 @@ export default function SavingsModal({ visible, onClose, subscriptions, currency
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={{ maxHeight: height * 0.7 }}
+            showsVerticalScrollIndicator
+            contentContainerStyle={{ paddingBottom: 24 }}
+          >
             {/* Section A — Free Trials Ending Soon */}
             {trials.length > 0 && (
               <View className="mb-6">
@@ -98,8 +101,8 @@ export default function SavingsModal({ visible, onClose, subscriptions, currency
               ))}
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   )
 }
