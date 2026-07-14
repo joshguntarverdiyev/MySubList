@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
@@ -26,6 +26,9 @@ export default function HomeScreen() {
   const userId = useUserId()
   const { subscriptions, isLoading, error, fetchSubscriptions } = useSubscriptionStore()
   const [savingsOpen, setSavingsOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const scrollRef = useRef<ScrollView>(null)
+  const sectionYRef = useRef(0)
 
   useFocusEffect(
     useCallback(() => {
@@ -39,9 +42,19 @@ export default function HomeScreen() {
   const savings = calculatePotentialSavings(subscriptions)
   const upcoming = getUpcomingPayments(subscriptions).map(toUpcomingItem)
 
+  const VISIBLE_LIMIT = 4
+  const visible = showAll ? subscriptions : subscriptions.slice(0, VISIBLE_LIMIT)
+
+  const toggleShowAll = () => {
+    const next = !showAll
+    setShowAll(next)
+    if (next) scrollRef.current?.scrollTo({ y: sectionYRef.current, animated: true })
+  }
+
   return (
     <View className="flex-1 bg-[#F0EBFF]">
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 32 }}
       >
@@ -89,22 +102,29 @@ export default function HomeScreen() {
               <UpcomingPayments items={upcoming} />
             </View>
 
-            <View className="mt-6 px-6">
+            <View
+              className="mt-6 px-6"
+              onLayout={(e) => { sectionYRef.current = e.nativeEvent.layout.y }}
+            >
               <View className="flex-row items-center justify-between mb-4">
                 <Text className="text-[20px] font-bold text-[#1A1A2E]">All Subscriptions</Text>
-                <TouchableOpacity>
-                  <Text className="text-[15px] font-semibold text-[#7C4DFF]">See all</Text>
-                </TouchableOpacity>
+                {subscriptions.length > VISIBLE_LIMIT && (
+                  <TouchableOpacity onPress={toggleShowAll}>
+                    <Text className="text-[15px] font-semibold text-[#7C4DFF]">
+                      {showAll ? 'See less' : 'See all'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <View
                 className="bg-white rounded-[22px] overflow-hidden"
                 style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
               >
-                {subscriptions.map((sub, index) => (
+                {visible.map((sub, index) => (
                   <SubscriptionRow
                     key={sub.id}
                     item={toRowItem(sub)}
-                    isLast={index === subscriptions.length - 1}
+                    isLast={index === visible.length - 1}
                   />
                 ))}
               </View>
