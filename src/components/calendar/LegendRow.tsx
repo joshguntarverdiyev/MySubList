@@ -11,7 +11,7 @@ const ITEMS: { label: string; color: string }[] = [
 
 export default function LegendRow() {
   return (
-    <View className="flex-row items-center justify-between mt-5 px-1">
+    <View className="flex-row items-center justify-between mt-2 px-1">
       {ITEMS.map((item) => (
         <View key={item.label} className="flex-row items-center">
           <View
