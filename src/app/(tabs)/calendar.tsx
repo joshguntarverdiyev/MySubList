@@ -114,9 +114,8 @@ export default function CalendarScreen() {
             renewalMap={renewalMap}
             filter={filter}
           />
+          <LegendRow />
         </View>
-
-        <LegendRow />
       </ScrollView>
 
       <FilterModal
