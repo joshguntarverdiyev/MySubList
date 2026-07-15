@@ -29,7 +29,12 @@ export default function CalendarGrid({ month, firstDayOfWeek, renewalMap, filter
   const gridStart = subDays(monthStart, offset)
   const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i))
   const labels = Array.from({ length: 7 }, (_, i) => DAY_LABELS[(firstDayOfWeek + i) % 7])
-  const rows = Array.from({ length: 6 }, (_, r) => days.slice(r * 7, r * 7 + 7))
+  // Only keep week rows that contain at least one day of the current month —
+  // drops fully out-of-month trailing/leading weeks so the card isn't padded
+  // with a blank row before the legend.
+  const rows = Array.from({ length: 6 }, (_, r) => days.slice(r * 7, r * 7 + 7)).filter((week) =>
+    week.some((d) => d.getMonth() === monthStart.getMonth())
+  )
 
   return (
     <View onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
