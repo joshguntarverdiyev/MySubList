@@ -10,7 +10,7 @@ import { useProfileStore } from '@/store/profileStore'
 import { useRatesStore } from '@/store/ratesStore'
 import {
   getUpcomingPayments, calculateTotalPaid,
-  calculateMonthlySpend, calculatePotentialSavings,
+  calculateMonthToDateSpend, calculatePotentialSavings,
 } from '@/services/subscriptions'
 import { toRowItem, toUpcomingItem } from '@/utils/homeDisplay'
 import { formatCurrency } from '@/utils/currency'
@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
   const convert = makeConverter(rates, currency)
   const totalPaid = formatCurrency(calculateTotalPaid(subscriptions, convert), currency)
-  const monthlySpend = formatCurrency(calculateMonthlySpend(subscriptions, convert), currency)
+  const monthlySpend = formatCurrency(calculateMonthToDateSpend(subscriptions, convert), currency)
   const savings = calculatePotentialSavings(subscriptions, convert)
 
   // Only note conversion when a sub is in a currency other than the profile's.

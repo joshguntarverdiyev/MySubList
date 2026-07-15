@@ -64,9 +64,13 @@ export const KIND_COLOR: Record<RenewalKind, string> = {
 const MAX_STEPS = 400
 
 /**
- * All renewal dates for one subscription that fall within the target month.
- * `month` is 0-indexed (0 = January), matching JS Date. Trial end dates are
- * included as their own marked date in addition to the regular schedule.
+ * All renewal (charge) dates for one subscription that fall within the target
+ * month. `month` is 0-indexed (0 = January), matching JS Date.
+ *
+ * Free-trial subs are not charged until the trial ends, so their billing
+ * schedule starts from trial_end_date (the first charge) rather than
+ * start_date. If the trial is cancelled/deleted the sub leaves the active
+ * list and contributes nothing.
  */
 export function getRenewalDatesForMonth(
   sub: Subscription,
@@ -77,31 +81,28 @@ export function getRenewalDatesForMonth(
 
   const monthStart = startOfMonth(new Date(year, month, 1))
   const monthEnd = endOfMonth(monthStart)
-  const start = parseISO(sub.start_date)
+  const scheduleStart =
+    sub.is_free_trial && sub.trial_end_date
+      ? parseISO(sub.trial_end_date)
+      : parseISO(sub.start_date)
   const dates: Date[] = []
 
   const within = (d: Date) => !isBefore(d, monthStart) && !isAfter(d, monthEnd)
 
   if (sub.billing_period === 'once') {
-    if (within(start)) dates.push(start)
+    if (within(scheduleStart)) dates.push(scheduleStart)
   } else {
     const step =
       sub.billing_period === 'weekly' ? addWeeks
       : sub.billing_period === 'yearly' ? addYears
       : addMonths
-    let d = start
+    let d = scheduleStart
     let steps = 0
     while (!isAfter(d, monthEnd) && steps < MAX_STEPS) {
       if (within(d)) dates.push(d)
       d = step(d, 1)
       steps += 1
     }
-  }
-
-  // Trial end date is an independent marked date (orange).
-  if (sub.is_free_trial && sub.trial_end_date) {
-    const te = parseISO(sub.trial_end_date)
-    if (within(te)) dates.push(te)
   }
 
   return dates

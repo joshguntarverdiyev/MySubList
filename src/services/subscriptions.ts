@@ -1,16 +1,12 @@
-import { differenceInCalendarDays, parseISO } from 'date-fns'
+import { differenceInCalendarDays, isAfter, parseISO, startOfDay } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { Subscription } from '@/types/subscription'
 import { computeTotalPaid } from '@/utils/subscriptionStats'
-import { nextRenewalIso } from '@/utils/renewalDates'
+import { nextRenewalIso, getRenewalDatesForMonth } from '@/utils/renewalDates'
 import type { Converter } from '@/utils/convert'
 
 /** Default converter: no conversion (1:1), used when rates aren't available. */
 const identity: Converter = (amount) => amount
-
-const MONTHLY_FACTOR: Record<Subscription['billing_period'], number> = {
-  weekly: 4.33, monthly: 1, yearly: 1 / 12, once: 0,
-}
 
 export async function getUserSubscriptions(userId: string): Promise<Subscription[]> {
   const { data, error } = await supabase
@@ -43,8 +39,23 @@ export function calculateTotalPaid(subscriptions: Subscription[], convert: Conve
   return subscriptions.reduce((sum, s) => sum + convert(computeTotalPaid(s), s.currency), 0)
 }
 
-export function calculateMonthlySpend(subscriptions: Subscription[], convert: Converter = identity): number {
-  return subscriptions.reduce((sum, s) => sum + convert(s.price * MONTHLY_FACTOR[s.billing_period], s.currency), 0)
+/**
+ * Money actually charged so far this month: sum of every renewal (charge)
+ * that has landed from the 1st of the current month up to and including today.
+ * Grows as new charges hit their date; resets on the 1st of each month.
+ */
+export function calculateMonthToDateSpend(
+  subscriptions: Subscription[],
+  convert: Converter = identity,
+  today: Date = new Date()
+): number {
+  const year = today.getFullYear()
+  const month = today.getMonth()
+  const floor = startOfDay(today)
+  return subscriptions.reduce((sum, sub) => {
+    const charges = getRenewalDatesForMonth(sub, year, month).filter((d) => !isAfter(d, floor))
+    return sum + charges.length * convert(sub.price, sub.currency)
+  }, 0)
 }
 
 /** Subscriptions on a free trial ending within the next 30 days, soonest first. */

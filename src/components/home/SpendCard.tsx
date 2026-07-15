@@ -38,7 +38,7 @@ export default function SpendCard({ totalPaid, monthlySpend, activeCount, note }
       {/* Bottom row: monthly spend | active subs */}
       <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
         <View style={{ flex: 1, alignItems: 'flex-start' }}>
-          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }}>Monthly Spend</Text>
+          <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }}>Spent This Month</Text>
           <Text style={{ fontSize: 17, fontWeight: '600', color: '#1A1A2E' }}>{monthlySpend}</Text>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
