@@ -11,39 +11,42 @@ interface SummaryCardProps {
 export default function SummaryCard({ monthTotal, paymentsCount, nextName, nextDaysLabel }: SummaryCardProps) {
   return (
     <View
-      className="bg-white rounded-2xl mx-6 px-5 py-4"
-      style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 4 }}
+      className="bg-white rounded-2xl mx-6"
+      style={{
+        flexDirection: 'row', alignItems: 'center', padding: 16, minHeight: 90,
+        shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 4,
+      }}
     >
-      <View className="flex-row items-center">
-        {/* Left — This month */}
-        <View className="flex-1">
-          <Text className="text-[12px] text-[#6B7280] mb-1">This month</Text>
-          <Text className="text-[26px] font-bold text-[#1A1A2E]">{monthTotal}</Text>
-          <Text className="text-[12px] font-semibold text-[#7C4DFF] mt-0.5">
-            {paymentsCount} {paymentsCount === 1 ? 'payment' : 'payments'}
-          </Text>
-        </View>
+      {/* Left — This month */}
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text className="text-[12px] text-[#6B7280] text-center mb-1">This month</Text>
+        <Text className="text-[28px] font-bold text-[#1A1A2E] text-center">{monthTotal}</Text>
+        <Text className="text-[12px] font-semibold text-[#7C4DFF] text-center mt-0.5">
+          {paymentsCount} {paymentsCount === 1 ? 'payment' : 'payments'}
+        </Text>
+      </View>
 
-        {/* Divider */}
-        <View className="w-px h-12 bg-[#E5E7EB] mx-3" />
+      {/* Vertical divider */}
+      <View style={{ width: 1, height: '70%', backgroundColor: '#E5E7EB', alignSelf: 'center', marginHorizontal: 12 }} />
 
-        {/* Right — Next payment */}
-        <View className="flex-1">
-          <Text className="text-[12px] text-[#6B7280] mb-1">Next payment</Text>
-          <Text className="text-[16px] font-bold text-[#1A1A2E]" numberOfLines={1}>
+      {/* Right — Next payment text + 3D image */}
+      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text className="text-[12px] text-[#6B7280] text-center mb-1">Next payment</Text>
+          <Text className="text-[18px] font-bold text-[#1A1A2E] text-center" numberOfLines={1}>
             {nextName ?? '—'}
           </Text>
           {nextDaysLabel ? (
-            <Text className="text-[12px] font-semibold text-[#7C4DFF] mt-0.5">{nextDaysLabel}</Text>
+            <Text className="text-[12px] font-semibold text-[#7C4DFF] text-center mt-0.5">{nextDaysLabel}</Text>
           ) : null}
         </View>
-
-        {/* 3D calendar image at the right edge */}
-        <Image
-          source={require('../../../assets/calendar-screen/calendar.png')}
-          style={{ width: 70, height: 70, marginLeft: 4, marginTop: -18 }}
-          contentFit="contain"
-        />
+        <View style={{ width: 80, alignItems: 'center', justifyContent: 'center' }}>
+          <Image
+            source={require('../../../assets/calendar-screen/calendar.png')}
+            style={{ width: 80, height: 80 }}
+            contentFit="contain"
+          />
+        </View>
       </View>
     </View>
   )
