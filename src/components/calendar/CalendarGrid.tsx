@@ -10,6 +10,7 @@ interface CalendarGridProps {
   firstDayOfWeek: number
   renewalMap: Map<string, Subscription[]>
   filter: CalendarFilter
+  onShowDay: (dateKey: string, subs: Subscription[]) => void
 }
 
 const DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -20,7 +21,7 @@ function matchesFilter(sub: Subscription, filter: CalendarFilter): boolean {
   return sub.billing_period === filter
 }
 
-export default function CalendarGrid({ month, firstDayOfWeek, renewalMap, filter }: CalendarGridProps) {
+export default function CalendarGrid({ month, firstDayOfWeek, renewalMap, filter, onShowDay }: CalendarGridProps) {
   const [gridWidth, setGridWidth] = useState(0)
   const cellWidth = gridWidth > 0 ? gridWidth / 7 : 0
 
@@ -67,6 +68,7 @@ export default function CalendarGrid({ month, firstDayOfWeek, renewalMap, filter
                   inMonth={inMonth}
                   width={cellWidth}
                   subs={subs}
+                  onShowDay={onShowDay}
                 />
               )
             })}

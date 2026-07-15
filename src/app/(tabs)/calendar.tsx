@@ -16,6 +16,8 @@ import MonthHeader from '@/components/calendar/MonthHeader'
 import CalendarGrid from '@/components/calendar/CalendarGrid'
 import LegendRow from '@/components/calendar/LegendRow'
 import FilterModal, { type CalendarFilter } from '@/components/calendar/FilterModal'
+import DaySubsModal from '@/components/calendar/DaySubsModal'
+import type { Subscription } from '@/types/subscription'
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets()
@@ -31,6 +33,7 @@ export default function CalendarScreen() {
   const [viewMonth, setViewMonth] = useState(new Date())
   const [filter, setFilter] = useState<CalendarFilter>('all')
   const [filterOpen, setFilterOpen] = useState(false)
+  const [daySubs, setDaySubs] = useState<{ dateKey: string; subs: Subscription[] } | null>(null)
 
   useFocusEffect(
     useCallback(() => {
@@ -113,6 +116,7 @@ export default function CalendarScreen() {
             firstDayOfWeek={firstDayOfWeek}
             renewalMap={renewalMap}
             filter={filter}
+            onShowDay={(dateKey, subs) => setDaySubs({ dateKey, subs })}
           />
           <LegendRow />
         </View>
@@ -123,6 +127,12 @@ export default function CalendarScreen() {
         active={filter}
         onSelect={setFilter}
         onClose={() => setFilterOpen(false)}
+      />
+
+      <DaySubsModal
+        dateKey={daySubs?.dateKey ?? null}
+        subs={daySubs?.subs ?? []}
+        onClose={() => setDaySubs(null)}
       />
     </View>
   )

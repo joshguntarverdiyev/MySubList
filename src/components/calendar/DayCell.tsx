@@ -11,11 +11,12 @@ interface DayCellProps {
   inMonth: boolean
   width: number
   subs: Subscription[]
+  onShowDay: (dateKey: string, subs: Subscription[]) => void
 }
 
 const today = startOfDay(new Date())
 
-export default function DayCell({ date, dateKey, inMonth, width, subs }: DayCellProps) {
+export default function DayCell({ date, dateKey, inMonth, width, subs, onShowDay }: DayCellProps) {
   if (!inMonth) return <View style={{ width, minHeight: 58 }} />
 
   const isToday = isSameDay(date, today)
@@ -24,8 +25,7 @@ export default function DayCell({ date, dateKey, inMonth, width, subs }: DayCell
   const isWeekend = dow === 0 || dow === 6
 
   const numberColor = isPast ? '#9CA3AF' : isWeekend ? '#6B7280' : '#1A1A2E'
-  const icons = subs.slice(0, 2)
-  const extra = subs.length - icons.length
+  const single = subs.length === 1 ? subs[0] : null
   const dots = subs.slice(0, 4)
 
   return (
@@ -40,29 +40,28 @@ export default function DayCell({ date, dateKey, inMonth, width, subs }: DayCell
         </Text>
       )}
 
-      {icons.length > 0 && (
-        <View className="flex-row items-center mt-0.5">
-          {icons.map((sub) => {
-            const { color, initial } = getBrandVisual(sub.brand_key, sub.name, sub.color)
-            return (
-              <TouchableOpacity
-                key={sub.id}
-                activeOpacity={0.7}
-                onPress={() => router.push(`/subscription/${sub.id}` as any)}
-                className="rounded-md items-center justify-center mx-[1px]"
-                style={{ width: 16, height: 16, backgroundColor: color }}
-              >
-                <Text className="text-white text-[9px] font-bold">{initial}</Text>
-              </TouchableOpacity>
-            )
-          })}
-          {extra > 0 && (
-            <View className="rounded-full bg-[#EDE9F8] px-1 mx-[1px] justify-center" style={{ height: 16 }}>
-              <Text className="text-[9px] font-bold text-[#7C4DFF]">+{extra}</Text>
-            </View>
-          )}
-        </View>
-      )}
+      {single ? (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push(`/subscription/${single.id}` as any)}
+          className="rounded-md items-center justify-center mt-0.5"
+          style={{ width: 16, height: 16, backgroundColor: getBrandVisual(single.brand_key, single.name, single.color).color }}
+        >
+          <Text className="text-white text-[9px] font-bold">
+            {getBrandVisual(single.brand_key, single.name, single.color).initial}
+          </Text>
+        </TouchableOpacity>
+      ) : subs.length > 1 ? (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          hitSlop={6}
+          onPress={() => onShowDay(dateKey, subs)}
+          className="rounded-full bg-[#EDE9F8] px-1.5 justify-center mt-0.5"
+          style={{ height: 16 }}
+        >
+          <Text className="text-[9px] font-bold text-[#7C4DFF]">+{subs.length}</Text>
+        </TouchableOpacity>
+      ) : null}
 
       {dots.length > 0 && (
         <View className="flex-row items-center mt-1">
