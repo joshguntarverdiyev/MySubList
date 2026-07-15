@@ -10,7 +10,7 @@ import { useProfileStore } from '@/store/profileStore'
 import { useRatesStore } from '@/store/ratesStore'
 import { makeConverter } from '@/utils/convert'
 import { formatCurrency } from '@/utils/currency'
-import { getMonthRenewalMap, daysAwayLabel } from '@/utils/renewalDates'
+import { getMonthRenewalMap, daysAwayLabel, nextRenewalIso } from '@/utils/renewalDates'
 import SummaryCard from '@/components/calendar/SummaryCard'
 import MonthHeader from '@/components/calendar/MonthHeader'
 import CalendarGrid from '@/components/calendar/CalendarGrid'
@@ -62,11 +62,13 @@ export default function CalendarScreen() {
     return { monthTotal: formatCurrency(total, currency), paymentsCount: count }
   }, [renewalMap, convert, currency])
 
-  // Next payment = soonest future renewal across all active subs.
+  // Next payment = soonest future renewal across all active subs (computed).
   const next = useMemo(() => {
+    const today = new Date()
     const upcoming = subscriptions
-      .filter((s) => s.next_renewal_date && differenceInCalendarDays(parseISO(s.next_renewal_date), new Date()) >= 0)
-      .sort((a, b) => parseISO(a.next_renewal_date!).getTime() - parseISO(b.next_renewal_date!).getTime())
+      .map((s) => ({ sub: s, next: nextRenewalIso(s, today) }))
+      .filter(({ next }) => next && differenceInCalendarDays(parseISO(next), today) >= 0)
+      .sort((a, b) => parseISO(a.next!).getTime() - parseISO(b.next!).getTime())
     return upcoming[0] ?? null
   }, [subscriptions])
 
@@ -92,8 +94,8 @@ export default function CalendarScreen() {
         <SummaryCard
           monthTotal={monthTotal}
           paymentsCount={paymentsCount}
-          nextName={next?.name ?? null}
-          nextDaysLabel={next?.next_renewal_date ? daysAwayLabel(next.next_renewal_date) : null}
+          nextName={next?.sub.name ?? null}
+          nextDaysLabel={next?.next ? daysAwayLabel(next.next) : null}
         />
 
         {/* Calendar card */}

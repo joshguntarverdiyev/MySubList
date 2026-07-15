@@ -2,10 +2,12 @@ import { addWeeks, addMonths, addYears, format } from 'date-fns'
 import type { BillingPeriod } from '@/constants/subscriptionOptions'
 
 /**
- * Compute the next renewal date from a start date + billing period.
- * Returns an ISO date string (yyyy-MM-dd), or null for one-time ('once') payments.
+ * The first renewal date to store when a subscription is created:
+ * start date + one billing period. Returns an ISO date string (yyyy-MM-dd),
+ * or null for one-time ('once') payments. For display, always compute the
+ * next renewal on-or-after today via computeNextRenewalDate in renewalDates.ts.
  */
-export function computeNextRenewalDate(
+export function initialRenewalDate(
   startDate: Date,
   period: BillingPeriod
 ): string | null {

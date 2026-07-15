@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { BillingPeriod } from '@/constants/subscriptionOptions'
 import type { Subscription } from '@/types/subscription'
-import { computeNextRenewalDate } from '@/utils/renewal'
+import { initialRenewalDate } from '@/utils/renewal'
 import { useSubscriptionStore } from '@/store/subscriptionStore'
 
 interface FormErrors {
@@ -62,7 +62,7 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
       currency,
       billing_period: period,
       start_date: format(startDate!, 'yyyy-MM-dd'),
-      next_renewal_date: computeNextRenewalDate(startDate!, period),
+      next_renewal_date: initialRenewalDate(startDate!, period),
       payment_method: method,
       is_free_trial: freeTrial,
     }

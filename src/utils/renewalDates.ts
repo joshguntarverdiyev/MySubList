@@ -3,6 +3,51 @@ import {
   endOfMonth, format, isAfter, isBefore, parseISO, startOfDay, startOfMonth,
 } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
+import type { BillingPeriod } from '@/constants/subscriptionOptions'
+
+// Loop cap for advancing to the next renewal (weekly ≈ 115 years of steps).
+const MAX_ADVANCE = 6000
+
+/**
+ * Compute the next renewal date ON OR AFTER today from a start date +
+ * billing period. Pure, no side effects, never mutates the input.
+ * - "once": returns the start date as-is (no recurring renewal).
+ * - start already >= today: returns start (first payment hasn't happened yet).
+ * - otherwise: advances by one period until the date >= startOfDay(today).
+ */
+export function computeNextRenewalDate(
+  startDate: Date | string,
+  billingPeriod: BillingPeriod,
+  today: Date = new Date()
+): Date {
+  const start = typeof startDate === 'string' ? parseISO(startDate) : startDate
+  if (billingPeriod === 'once') return start
+
+  const floor = startOfDay(today)
+  if (!isBefore(start, floor)) return start
+
+  const step =
+    billingPeriod === 'weekly' ? addWeeks
+    : billingPeriod === 'yearly' ? addYears
+    : addMonths
+
+  let next = start
+  let steps = 0
+  while (isBefore(next, floor) && steps < MAX_ADVANCE) {
+    next = step(next, 1)
+    steps += 1
+  }
+  return next
+}
+
+/**
+ * Display/sort helper: the next renewal as an ISO "yyyy-MM-dd" string, or
+ * null for one-time subs (which have no recurring renewal).
+ */
+export function nextRenewalIso(sub: Subscription, today: Date = new Date()): string | null {
+  if (sub.billing_period === 'once') return sub.next_renewal_date
+  return format(computeNextRenewalDate(sub.start_date, sub.billing_period, today), 'yyyy-MM-dd')
+}
 
 /** Dot categories used for coloring renewal occurrences on the grid. */
 export type RenewalKind = 'paid' | 'trial' | 'weekly' | 'monthly' | 'yearly'

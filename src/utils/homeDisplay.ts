@@ -3,6 +3,7 @@ import type { Subscription } from '@/types/subscription'
 import type { SubscriptionItem } from '@/components/home/SubscriptionRow'
 import { formatCurrency } from '@/utils/currency'
 import { getBrandVisual } from '@/utils/brand'
+import { nextRenewalIso } from '@/utils/renewalDates'
 
 export interface UpcomingItem {
   id: string
@@ -39,10 +40,11 @@ export function toRowItem(sub: Subscription): SubscriptionItem {
 
 export function toUpcomingItem(sub: Subscription): UpcomingItem {
   const { color, initial } = getBrandVisual(sub.brand_key, sub.name, sub.color)
+  const nextIso = nextRenewalIso(sub)
   return {
     id: sub.id,
     name: sub.name,
-    daysLabel: sub.next_renewal_date ? daysLabel(sub.next_renewal_date) : '',
+    daysLabel: nextIso ? daysLabel(nextIso) : '',
     price: formatCurrency(sub.price, sub.currency),
     color,
     initial,

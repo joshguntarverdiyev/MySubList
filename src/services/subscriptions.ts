@@ -2,6 +2,7 @@ import { differenceInCalendarDays, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { Subscription } from '@/types/subscription'
 import { computeTotalPaid } from '@/utils/subscriptionStats'
+import { nextRenewalIso } from '@/utils/renewalDates'
 import type { Converter } from '@/utils/convert'
 
 /** Default converter: no conversion (1:1), used when rates aren't available. */
@@ -26,13 +27,15 @@ export async function getUserSubscriptions(userId: string): Promise<Subscription
 export function getUpcomingPayments(subscriptions: Subscription[]): Subscription[] {
   const today = new Date()
   return subscriptions
-    .filter((s) => {
-      if (!s.next_renewal_date) return false
-      const days = differenceInCalendarDays(parseISO(s.next_renewal_date), today)
+    .map((s) => ({ sub: s, next: nextRenewalIso(s, today) }))
+    .filter(({ next }) => {
+      if (!next) return false
+      const days = differenceInCalendarDays(parseISO(next), today)
       return days >= 0 && days <= 30
     })
-    .sort((a, b) => parseISO(a.next_renewal_date!).getTime() - parseISO(b.next_renewal_date!).getTime())
+    .sort((a, b) => parseISO(a.next!).getTime() - parseISO(b.next!).getTime())
     .slice(0, 10)
+    .map(({ sub }) => sub)
 }
 
 /** Actual total paid so far across all subscriptions (sum of per-sub paid). */

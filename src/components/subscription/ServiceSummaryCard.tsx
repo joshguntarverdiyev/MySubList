@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons'
 import type { Subscription } from '@/types/subscription'
 import { getBrandVisual } from '@/utils/brand'
 import { computeTotalPaid, formatLongDate } from '@/utils/subscriptionStats'
+import { nextRenewalIso } from '@/utils/renewalDates'
 import { formatCurrency } from '@/utils/currency'
 
 export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
@@ -56,7 +57,7 @@ export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
         <View className="w-px h-12 bg-[#E5E7EB] mx-4" />
         <View className="flex-1">
           <Text className="text-[13px] text-[#667085] mb-1">Next payment</Text>
-          <Text className="text-[18px] font-bold text-[#111827]">{formatLongDate(sub.next_renewal_date)}</Text>
+          <Text className="text-[18px] font-bold text-[#111827]">{formatLongDate(nextRenewalIso(sub))}</Text>
         </View>
       </View>
     </View>
