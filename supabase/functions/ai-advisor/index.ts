@@ -1,5 +1,16 @@
 // supabase/functions/ai-advisor/index.ts
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  addMonths,
+  addWeeks,
+  addYears,
+  endOfMonth,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+} from "npm:date-fns@4";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -8,7 +19,7 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const DAILY_LIMIT = 5;
 const HISTORY_LIMIT = 10;
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +44,9 @@ type Sub = {
   currency: string;
   billing_period: "weekly" | "monthly" | "yearly" | "once";
   is_free_trial: boolean;
+  is_active: boolean;
+  start_date: string;
+  trial_end_date: string | null;
 };
 
 // Normalize any billing period to a monthly figure for the total.
@@ -49,28 +63,127 @@ function toMonthly(price: number, period: Sub["billing_period"]): number {
   }
 }
 
-function buildSystemPrompt(subs: Sub[]): string {
-  const currency = subs[0]?.currency ?? "EUR";
+// Loop guard for weekly subs with very old start dates (mirrors the app).
+const MAX_STEPS = 400;
+
+/**
+ * All renewal (charge) dates for one subscription within the target month —
+ * ported verbatim from src/utils/renewalDates.ts so the advisor's "spent so
+ * far this month" total matches the Home dashboard exactly. `month` is
+ * 0-indexed (0 = January).
+ */
+function getRenewalDatesForMonth(sub: Sub, year: number, month: number): Date[] {
+  if (!sub.is_active) return [];
+
+  const monthStart = startOfMonth(new Date(year, month, 1));
+  const monthEnd = endOfMonth(monthStart);
+  const scheduleStart =
+    sub.is_free_trial && sub.trial_end_date
+      ? parseISO(sub.trial_end_date)
+      : parseISO(sub.start_date);
+  const dates: Date[] = [];
+
+  const within = (d: Date) => !isBefore(d, monthStart) && !isAfter(d, monthEnd);
+
+  if (sub.billing_period === "once") {
+    if (within(scheduleStart)) dates.push(scheduleStart);
+  } else {
+    const step =
+      sub.billing_period === "weekly"
+        ? addWeeks
+        : sub.billing_period === "yearly"
+        ? addYears
+        : addMonths;
+    let d = scheduleStart;
+    let steps = 0;
+    while (!isAfter(d, monthEnd) && steps < MAX_STEPS) {
+      if (within(d)) dates.push(d);
+      d = step(d, 1);
+      steps += 1;
+    }
+  }
+
+  return dates;
+}
+
+/**
+ * Money actually charged so far this month, converted to `targetCurrency` —
+ * mirrors calculateMonthToDateSpend in src/services/subscriptions.ts (the
+ * figure shown on the Home dashboard).
+ */
+function monthToDateSpend(
+  subs: Sub[],
+  targetCurrency: string,
+  rates: Record<string, number>,
+  today: Date = new Date(),
+): number {
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const floor = startOfDay(today);
+  return subs.reduce((sum, sub) => {
+    const charges = getRenewalDatesForMonth(sub, year, month).filter(
+      (d) => !isAfter(d, floor),
+    );
+    return sum + charges.length * convert(sub.price, sub.currency, targetCurrency, rates);
+  }, 0);
+}
+
+// Convert an amount between currencies using EUR-based Frankfurter rates
+// (rate[X] = units of X per 1 EUR). 1:1 fallback if a rate is missing.
+function convert(
+  amount: number,
+  from: string,
+  to: string,
+  rates: Record<string, number>,
+): number {
+  const fromRate = rates[from];
+  const toRate = rates[to];
+  if (!fromRate || !toRate) return amount;
+  return (amount / fromRate) * toRate;
+}
+
+function buildSystemPrompt(
+  subs: Sub[],
+  targetCurrency: string,
+  rates: Record<string, number>,
+): string {
   const list = subs.length
     ? subs
         .map((s) => {
           const plan = s.plan_name ? ` (${s.plan_name})` : "";
           const trial = s.is_free_trial ? " [free trial]" : "";
-          return `- ${s.name}${plan}: ${s.price} ${s.currency}/${s.billing_period}${trial}`;
+          const monthlyInTarget = convert(
+            toMonthly(s.price, s.billing_period),
+            s.currency,
+            targetCurrency,
+            rates,
+          ).toFixed(2);
+          const native = `${s.price} ${s.currency}/${s.billing_period}`;
+          return `- ${s.name}${plan}: ${native}${trial} (≈ ${monthlyInTarget} ${targetCurrency}/month recurring)`;
         })
         .join("\n")
     : "- (no active subscriptions)";
 
-  const monthlyTotal = subs
-    .reduce((sum, s) => sum + toMonthly(s.price, s.billing_period), 0)
+  // Headline figure the user sees on the Home dashboard.
+  const monthToDate = monthToDateSpend(subs, targetCurrency, rates).toFixed(2);
+  // Full recurring monthly cost, useful for savings comparisons.
+  const recurringMonthly = subs
+    .reduce(
+      (sum, s) =>
+        sum +
+        convert(toMonthly(s.price, s.billing_period), s.currency, targetCurrency, rates),
+      0,
+    )
     .toFixed(2);
 
   return `You are a smart, friendly subscription management advisor inside the MySubList app. Your job is to help users understand their subscriptions and save money.
 
-The user has these active subscriptions:
+The user has these active subscriptions (each line shows the native price and the pre-computed equivalent monthly cost in ${targetCurrency}):
 ${list}
 
-Their total monthly spend is ${monthlyTotal} ${currency}.
+Spending figures (already converted to ${targetCurrency}):
+- Monthly spend so far this month (1st to today): ${monthToDate} ${targetCurrency}. This is the exact "Monthly spend" number shown on the app's Home dashboard — use THIS when the user asks about their monthly spend.
+- Full recurring monthly cost if every subscription is billed once per month: ${recurringMonthly} ${targetCurrency}. Use this for savings comparisons and projections, not as their "monthly spend".
 
 Rules for your responses:
 - Be concise — max 3-4 sentences per response.
@@ -78,7 +191,20 @@ Rules for your responses:
 - Be actionable — give clear next steps.
 - Be friendly — casual but professional tone.
 - Never make up subscription data.
+- All amounts are already converted to ${targetCurrency}. Do NOT perform your own currency conversion or invent exchange rates — trust the pre-computed figures above.
 - If asked something unrelated to subscriptions or finance, politely redirect back to subscription advice.`;
+}
+
+// Fetch live EUR-based rates from Frankfurter (same source as the app).
+async function fetchRates(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch("https://api.frankfurter.dev/v1/latest?base=EUR");
+    if (!res.ok) return { EUR: 1 };
+    const json = (await res.json()) as { rates: Record<string, number> };
+    return { EUR: 1, ...json.rates };
+  } catch {
+    return { EUR: 1 }; // 1:1 fallback keeps totals sane if rates are down
+  }
 }
 
 // ---- Handler -----------------------------------------------------------------
@@ -160,14 +286,30 @@ Deno.serve(async (req) => {
   // Fetch active subscriptions for the system prompt.
   const { data: subs, error: subsError } = await supabase
     .from("subscriptions")
-    .select("name, plan_name, price, currency, billing_period, is_free_trial")
+    .select(
+      "name, plan_name, price, currency, billing_period, is_free_trial, is_active, start_date, trial_end_date",
+    )
     .eq("is_active", true);
 
   if (subsError) {
     return json({ error: "Could not load subscriptions" }, 500);
   }
 
-  const systemPrompt = buildSystemPrompt((subs ?? []) as Sub[]);
+  // Resolve the user's display currency (falls back to EUR) and live rates so
+  // mixed-currency subscriptions are converted before the total is computed.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("currency")
+    .eq("id", user.id)
+    .maybeSingle();
+  const targetCurrency = profile?.currency ?? "EUR";
+  const rates = await fetchRates();
+
+  const systemPrompt = buildSystemPrompt(
+    (subs ?? []) as Sub[],
+    targetCurrency,
+    rates,
+  );
 
   // 4. Build Gemini request: system instruction + history + new message.
   const contents = [
@@ -178,21 +320,34 @@ Deno.serve(async (req) => {
     { role: "user", parts: [{ text: message }] },
   ];
 
-  const geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 300,
-      },
-    }),
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 400,
+      // Gemini 2.5 Flash is a thinking model; without this it burns the
+      // token budget on internal reasoning and returns truncated replies.
+      thinkingConfig: { thinkingBudget: 0 },
+    },
   });
+
+  // Gemini occasionally returns 503 (UNAVAILABLE) under load — retry a few
+  // times with backoff before surfacing the error to the user.
+  let geminiRes!: Response;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: requestBody,
+    });
+    if (geminiRes.status !== 503 && geminiRes.status !== 429) break;
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+  }
 
   if (!geminiRes.ok) {
     const detail = await geminiRes.text();
+    // Full detail stays in the server logs; the client gets a generic message.
     console.error("Gemini error:", geminiRes.status, detail);
     return json({ error: "AI request failed" }, 502);
   }

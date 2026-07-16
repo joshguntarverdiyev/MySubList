@@ -31,10 +31,13 @@ export async function sendAdvisorMessage(message: string): Promise<string> {
   })
 
   if (error) {
-    // supabase-js surfaces non-2xx as a FunctionsHttpError; inspect the status.
-    const status = (error as { context?: { status?: number } }).context?.status
+    // supabase-js surfaces non-2xx as a FunctionsHttpError whose `context`
+    // is the raw Response. Read the status so we can detect the daily limit.
+    const res = (error as { context?: Response }).context
+    const status = res?.status
+    console.warn('[ai-advisor] request failed', { status, error })
     if (status === 429) throw new DailyLimitError()
-    throw error
+    throw new Error('request-failed')
   }
 
   const reply = (data as { reply?: string })?.reply?.trim()
