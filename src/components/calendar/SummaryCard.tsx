@@ -30,11 +30,11 @@ export default function SummaryCard({ monthTotal, paymentsCount, nextName, nextD
       <View style={{ width: 1, height: '72%', backgroundColor: '#E5E7EB', alignSelf: 'center', marginHorizontal: 10 }} />
 
       {/* Right — Next payment text + 3D image (image is absolute so long names never slide under it) */}
-      <View style={{ flex: 1.7, position: 'relative', justifyContent: 'center' }}>
+      <View style={{ flex: 1.7, position: 'relative' }}>
         {/* paddingRight reserves the image's zone so text truncates before reaching it */}
         <View style={{ alignItems: 'flex-start', paddingRight: 98 }}>
           <Text className="text-[13px] text-[#6B7280] mb-0 text-left" numberOfLines={1}>Next payment</Text>
-          <Text className="text-[18px] font-bold text-[#1A1A2E] text-left" style={{ lineHeight: 24 }} numberOfLines={1}>
+          <Text className="text-[18px] font-bold text-[#1A1A2E] text-left" style={{ lineHeight: 30 }} numberOfLines={1}>
             {nextName ?? '—'}
           </Text>
           {nextDaysLabel ? (
