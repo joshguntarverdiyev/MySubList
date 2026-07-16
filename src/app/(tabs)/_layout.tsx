@@ -63,6 +63,7 @@ export default function TabsLayout() {
         options={{
           title: 'AI Advisor',
           tabBarIcon: ({ focused }) => tabIcon('chatbubble-outline', focused),
+          tabBarStyle: { display: 'none' },
         }}
       />
       <Tabs.Screen
