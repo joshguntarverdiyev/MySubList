@@ -3,7 +3,12 @@ import { View, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useUserId } from '@/hooks/useUserId'
-import { loadRecentMessages, sendAdvisorMessage, DailyLimitError } from '@/services/aiAdvisor'
+import {
+  loadRecentMessages,
+  sendAdvisorMessage,
+  DailyLimitError,
+  ValidationError,
+} from '@/services/aiAdvisor'
 import type { ChatMessage } from '@/types/message'
 import AdvisorHeader from '@/components/advisor/AdvisorHeader'
 import MessageBubble from '@/components/advisor/MessageBubble'
@@ -82,7 +87,12 @@ export default function AdvisorScreen() {
         const reply = await sendAdvisorMessage(trimmed)
         appendAssistant(reply, `ai-${now}`)
       } catch (err) {
-        const content = err instanceof DailyLimitError ? LIMIT_MSG : ERROR_MSG
+        const content =
+          err instanceof DailyLimitError
+            ? LIMIT_MSG
+            : err instanceof ValidationError
+              ? err.message
+              : ERROR_MSG
         appendAssistant(content, `err-${now}`)
       } finally {
         setTyping(false)

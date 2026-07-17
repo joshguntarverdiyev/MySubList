@@ -17,9 +17,26 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const DAILY_LIMIT = 5;
+const PER_MINUTE_LIMIT = 3;
+const MAX_MESSAGE_LENGTH = 500;
+const MAX_REPLY_LENGTH = 1000;
 const HISTORY_LIMIT = 10;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+
+// Shown as a normal chat bubble whenever the AI call fails for any reason, so
+// the user never sees a technical error or a red error state.
+const BUSY_REPLY =
+  "Our AI advisor is a bit busy right now. Please try again in a moment.";
+
+// Lowercased substrings that indicate an obvious prompt-injection attempt.
+const INJECTION_PATTERNS = [
+  "ignore previous instructions",
+  "ignore all instructions",
+  "you are now",
+  "act as",
+  "forget your instructions",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +50,21 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+// Log a rejected request (4xx/429) with the user id and a short reason — never
+// the message content — then return the response. Logs surface in the Supabase
+// Edge Function dashboard.
+function reject(
+  status: number,
+  error: string,
+  userId: string,
+  reason: string,
+): Response {
+  console.error(
+    `[ai-advisor] reject status=${status} user=${userId} reason="${reason}"`,
+  );
+  return json({ error }, status);
 }
 
 // ---- Subscription formatting -------------------------------------------------
@@ -217,7 +249,7 @@ Deno.serve(async (req) => {
     return json({ error: "Method not allowed" }, 405);
   }
 
-  // 1. Authenticate user via the caller's JWT.
+  // Authenticate user via the caller's JWT.
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return json({ error: "Missing authorization header" }, 401);
@@ -236,42 +268,79 @@ Deno.serve(async (req) => {
     return json({ error: "Unauthorized" }, 401);
   }
 
-  // Parse body.
-  let message: string;
+  // 1. INPUT VALIDATION -------------------------------------------------------
+  let rawMessage: unknown;
   try {
     const body = await req.json();
-    message = (body?.message ?? "").toString().trim();
+    rawMessage = body?.message;
   } catch {
-    return json({ error: "Invalid JSON body" }, 400);
+    return reject(400, "Invalid JSON body", user.id, "invalid-json");
   }
-  if (!message) {
-    return json({ error: "Message is required" }, 400);
+  if (rawMessage === undefined || rawMessage === null) {
+    return reject(400, "Message is required", user.id, "missing-message");
   }
 
-  // 2. Rate limit — count today's user messages (RLS scopes to this user).
-  const startOfDay = new Date();
-  startOfDay.setUTCHours(0, 0, 0, 0);
+  const message = rawMessage.toString().trim();
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return reject(
+      400,
+      "Message too long (max 500 characters)",
+      user.id,
+      "too-long",
+    );
+  }
+  if (!message) {
+    return reject(400, "Message cannot be empty", user.id, "empty");
+  }
+
+  // 2. PER-MINUTE BURST RATE LIMIT --------------------------------------------
+  // Count this user's messages in the last 60s (RLS scopes rows to the user).
+  const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();
+  const { count: recentCount, error: recentError } = await supabase
+    .from("ai_messages")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "user")
+    .gte("created_at", oneMinuteAgo);
+
+  if (recentError) {
+    return json({ error: "Could not check message limit" }, 500);
+  }
+  if ((recentCount ?? 0) >= PER_MINUTE_LIMIT) {
+    return reject(
+      429,
+      "Too many requests. Please wait a moment.",
+      user.id,
+      "per-minute-limit",
+    );
+  }
+
+  // 3. CONTENT FILTERING ------------------------------------------------------
+  const lowered = message.toLowerCase();
+  if (INJECTION_PATTERNS.some((pattern) => lowered.includes(pattern))) {
+    return reject(400, "Invalid message content", user.id, "content-filter");
+  }
+
+  // 4. DAILY MESSAGE LIMIT ----------------------------------------------------
+  const startOfDayUtc = new Date();
+  startOfDayUtc.setUTCHours(0, 0, 0, 0);
 
   const { count, error: countError } = await supabase
     .from("ai_messages")
     .select("*", { count: "exact", head: true })
     .eq("role", "user")
-    .gte("created_at", startOfDay.toISOString());
+    .gte("created_at", startOfDayUtc.toISOString());
 
   if (countError) {
     return json({ error: "Could not check message limit" }, 500);
   }
   if ((count ?? 0) >= DAILY_LIMIT) {
-    return json(
-      {
-        error: "Daily message limit reached",
-        limit: DAILY_LIMIT,
-      },
-      429,
+    console.error(
+      `[ai-advisor] reject status=429 user=${user.id} reason="daily-limit"`,
     );
+    return json({ error: "Daily message limit reached", limit: DAILY_LIMIT }, 429);
   }
 
-  // 3. Fetch last 10 messages for chat history (oldest -> newest).
+  // Fetch last 10 messages for chat history (oldest -> newest).
   const { data: historyRows, error: historyError } = await supabase
     .from("ai_messages")
     .select("role, content")
@@ -311,7 +380,7 @@ Deno.serve(async (req) => {
     rates,
   );
 
-  // 4. Build Gemini request: system instruction + history + new message.
+  // Build Gemini request: system instruction + history + new message.
   const contents = [
     ...history.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
@@ -332,38 +401,50 @@ Deno.serve(async (req) => {
     },
   });
 
-  // Gemini occasionally returns 503 (UNAVAILABLE) under load — retry a few
-  // times with backoff before surfacing the error to the user.
-  let geminiRes!: Response;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: requestBody,
-    });
-    if (geminiRes.status !== 503 && geminiRes.status !== 429) break;
-    if (attempt < 2) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+  // 6. Call Gemini. Any failure (bad status, network error, invalid JSON, or
+  //    empty reply) returns a friendly message as a normal chat bubble — the
+  //    real cause is logged server-side and never shown to the user.
+  let reply = "";
+  try {
+    // Gemini occasionally returns 503/429 under load — retry with backoff.
+    let geminiRes!: Response;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: requestBody,
+      });
+      if (geminiRes.status !== 503 && geminiRes.status !== 429) break;
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
+
+    if (!geminiRes.ok) {
+      const detail = await geminiRes.text();
+      console.error("Gemini error:", geminiRes.status, detail);
+      return json({ reply: BUSY_REPLY });
+    }
+
+    const geminiData = await geminiRes.json();
+    reply =
+      geminiData?.candidates?.[0]?.content?.parts
+        ?.map((p: { text?: string }) => p.text ?? "")
+        .join("")
+        .trim() ?? "";
+  } catch (err) {
+    console.error("Gemini request threw:", err);
+    return json({ reply: BUSY_REPLY });
   }
 
-  if (!geminiRes.ok) {
-    const detail = await geminiRes.text();
-    // Full detail stays in the server logs; the client gets a generic message.
-    console.error("Gemini error:", geminiRes.status, detail);
-    return json({ error: "AI request failed" }, 502);
-  }
-
-  const geminiData = await geminiRes.json();
-  const reply: string =
-    geminiData?.candidates?.[0]?.content?.parts
-      ?.map((p: { text?: string }) => p.text ?? "")
-      .join("")
-      .trim() ?? "";
-
+  // 5. RESPONSE VALIDATION ----------------------------------------------------
   if (!reply) {
-    return json({ error: "AI returned an empty response" }, 502);
+    console.error(`[ai-advisor] empty Gemini reply user=${user.id}`);
+    return json({ reply: BUSY_REPLY });
+  }
+  if (reply.length > MAX_REPLY_LENGTH) {
+    reply = reply.slice(0, MAX_REPLY_LENGTH) + "...";
   }
 
-  // 5. Persist user message + AI response.
+  // Persist user message + AI response.
   const { error: insertError } = await supabase.from("ai_messages").insert([
     { user_id: user.id, role: "user", content: message },
     { user_id: user.id, role: "assistant", content: reply },
@@ -374,6 +455,6 @@ Deno.serve(async (req) => {
     // Reply still returned — don't fail the user's request over logging.
   }
 
-  // 6. Return the AI response text.
+  // Return the AI response text.
   return json({ reply });
 });
