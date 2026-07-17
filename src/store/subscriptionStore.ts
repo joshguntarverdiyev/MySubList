@@ -8,6 +8,7 @@ interface SubscriptionState {
   error: string | null
   fetchSubscriptions: (userId: string) => Promise<void>
   refreshSubscriptions: (userId: string) => Promise<void>
+  reset: () => void
 }
 
 async function load(
@@ -31,4 +32,5 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   error: null,
   fetchSubscriptions: (userId) => load(set, userId, true),
   refreshSubscriptions: (userId) => load(set, userId, false),
+  reset: () => set({ subscriptions: [], isLoading: false, error: null }),
 }))

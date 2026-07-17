@@ -15,9 +15,10 @@ interface ProfileState {
   setFirstDayOfWeek: (day: number) => void
   setNotificationDays: (days: number) => void
   setAvatarUrl: (url: string | null) => void
+  reset: () => void
 }
 
-export const useProfileStore = create<ProfileState>((set) => ({
+const DEFAULTS = {
   full_name: '',
   email: '',
   avatar_url: null,
@@ -26,6 +27,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
   notification_days_before: 2,
   is_premium: false,
   loaded: false,
+}
+
+export const useProfileStore = create<ProfileState>((set) => ({
+  ...DEFAULTS,
   fetchProfile: async (userId) => {
     const { data, error } = await supabase
       .from('profiles')
@@ -55,4 +60,5 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setFirstDayOfWeek: (first_day_of_week) => set({ first_day_of_week }),
   setNotificationDays: (notification_days_before) => set({ notification_days_before }),
   setAvatarUrl: (avatar_url) => set({ avatar_url }),
+  reset: () => set({ ...DEFAULTS }),
 }))

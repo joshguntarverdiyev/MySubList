@@ -11,6 +11,7 @@ import SettingsCard from '@/components/profile/SettingsCard'
 import SettingsRow from '@/components/profile/SettingsRow'
 import OptionSheet from '@/components/profile/OptionSheet'
 import InfoModal from '@/components/profile/InfoModal'
+import DangerZone from '@/components/profile/DangerZone'
 import {
   NOTIFICATION_OPTIONS,
   CURRENCY_OPTIONS,
@@ -107,6 +108,8 @@ export default function ProfileScreen() {
             onPress={() => Alert.alert('MySubList v1.0.0', 'Built with Expo + Supabase + Gemini AI\n© 2026 MySubList')}
           />
         </SettingsCard>
+
+        <DangerZone />
       </ScrollView>
 
       <OptionSheet
