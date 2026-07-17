@@ -3,6 +3,7 @@ import { View, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useUserId } from '@/hooks/useUserId'
+import { useProfileStore } from '@/store/profileStore'
 import {
   loadRecentMessages,
   sendAdvisorMessage,
@@ -30,6 +31,9 @@ const ERROR_MSG = 'Something went wrong. Try again.'
 export default function AdvisorScreen() {
   const insets = useSafeAreaInsets()
   const userId = useUserId()
+  const avatarUrl = useProfileStore((s) => s.avatar_url)
+  const fullName = useProfileStore((s) => s.full_name)
+  const fetchProfile = useProfileStore((s) => s.fetchProfile)
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
@@ -41,6 +45,7 @@ export default function AdvisorScreen() {
 
   useEffect(() => {
     if (!userId) return
+    fetchProfile(userId)
     ;(async () => {
       try {
         const history = await loadRecentMessages(userId)
@@ -51,7 +56,7 @@ export default function AdvisorScreen() {
         scrollToEnd()
       }
     })()
-  }, [userId, scrollToEnd])
+  }, [userId, scrollToEnd, fetchProfile])
 
   useEffect(() => {
     const sub = Keyboard.addListener('keyboardDidShow', scrollToEnd)
@@ -120,7 +125,7 @@ export default function AdvisorScreen() {
           onContentSizeChange={scrollToEnd}
         >
           {messages.map((m) => (
-            <MessageBubble key={m.id} message={m} />
+            <MessageBubble key={m.id} message={m} avatarUrl={avatarUrl} userName={fullName} />
           ))}
           {typing && <TypingIndicator />}
         </ScrollView>

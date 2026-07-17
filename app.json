@@ -28,7 +28,14 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MySubList needs access to your photos so you can set a profile picture.",
+          "cameraPermission": "MySubList needs access to your camera so you can take a profile picture."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

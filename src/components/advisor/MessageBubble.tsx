@@ -3,14 +3,17 @@ import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import type { ChatMessage } from '@/types/message'
+import ProfileAvatar from '@/components/profile/ProfileAvatar'
 
 const mascot = require('../../../assets/ai-screen/ai-mascot-tight.png')
 
 interface Props {
   message: ChatMessage
+  avatarUrl?: string | null
+  userName?: string
 }
 
-export default function MessageBubble({ message }: Props) {
+export default function MessageBubble({ message, avatarUrl, userName }: Props) {
   const isUser = message.role === 'user'
   const time = safeTime(message.created_at)
 
@@ -26,8 +29,8 @@ export default function MessageBubble({ message }: Props) {
             )}
           </View>
         </View>
-        <View className="ml-2 h-[34px] w-[34px] items-center justify-center rounded-full bg-[#EDE9F8]">
-          <Ionicons name="person" size={16} color="#7C4DFF" />
+        <View className="ml-2">
+          <ProfileAvatar avatarUrl={avatarUrl} name={userName} size={34} />
         </View>
       </View>
     )
