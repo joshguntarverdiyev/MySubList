@@ -1,8 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
-
-const mascot = require('../../../assets/ai-screen/ai-mascot.png')
+import BlinkingMascot from './BlinkingMascot'
 
 interface Props {
   onClose: () => void
@@ -11,12 +9,12 @@ interface Props {
 export default function AdvisorHeader({ onClose }: Props) {
   return (
     <View className="flex-row items-center px-6 pb-3 pt-2">
-      <View className="h-14 w-14 items-center justify-center rounded-full bg-[#EDE9F8]">
-        <Image source={mascot} style={{ width: 46, height: 46 }} contentFit="contain" />
+      <View className="h-[54px] w-[54px] items-center justify-center rounded-full bg-[#EDE9F8]">
+        <BlinkingMascot size={54} />
       </View>
 
       <View className="ml-3 flex-1">
-        <Text className="text-lg font-bold text-[#1A1A2E]">AI Advisor</Text>
+        <Text className="text-xl font-bold text-[#1A1A2E]">AI Advisor</Text>
         <View className="mt-0.5 flex-row items-center">
           <View className="mr-1.5 h-2 w-2 rounded-full bg-[#10B981]" />
           <Text className="text-xs font-medium text-[#444952]">
@@ -38,7 +36,7 @@ export default function AdvisorHeader({ onClose }: Props) {
           elevation: 3,
         }}
       >
-        <Ionicons name="close" size={22} color="#1A1A2E" />
+        <Ionicons name="close" size={22} color="#7C4DFF" />
       </TouchableOpacity>
     </View>
   )

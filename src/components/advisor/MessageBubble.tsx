@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import type { ChatMessage } from '@/types/message'
 
-const mascot = require('../../../assets/ai-screen/ai-mascot.png')
+const mascot = require('../../../assets/ai-screen/ai-mascot-tight.png')
 
 interface Props {
   message: ChatMessage
@@ -26,7 +26,7 @@ export default function MessageBubble({ message }: Props) {
             )}
           </View>
         </View>
-        <View className="ml-2 h-8 w-8 items-center justify-center rounded-full bg-[#EDE9F8]">
+        <View className="ml-2 h-[34px] w-[34px] items-center justify-center rounded-full bg-[#EDE9F8]">
           <Ionicons name="person" size={16} color="#7C4DFF" />
         </View>
       </View>
@@ -35,8 +35,8 @@ export default function MessageBubble({ message }: Props) {
 
   return (
     <View className="mb-4 flex-row items-end px-6">
-      <View className="mr-2 h-8 w-8 items-center justify-center rounded-full bg-[#EDE9F8]">
-        <Image source={mascot} style={{ width: 26, height: 26 }} contentFit="contain" />
+      <View className="mr-2 h-[34px] w-[34px] items-center justify-center rounded-full bg-[#EDE9F8]">
+        <Image source={mascot} style={{ width: 34, height: 34 }} contentFit="contain" />
       </View>
       <View className="max-w-[78%] rounded-[20px] bg-[#F5F1FF] px-4 py-3">
         <Text className="text-[15px] leading-5 text-[#1A1A2E]">{message.content}</Text>

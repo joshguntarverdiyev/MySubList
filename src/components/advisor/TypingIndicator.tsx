@@ -2,7 +2,7 @@ import { View } from 'react-native'
 import { Image } from 'expo-image'
 import { MotiView } from 'moti'
 
-const mascot = require('../../../assets/ai-screen/ai-mascot.png')
+const mascot = require('../../../assets/ai-screen/ai-mascot-tight.png')
 
 function Dot({ delay }: { delay: number }) {
   return (
@@ -18,8 +18,8 @@ function Dot({ delay }: { delay: number }) {
 export default function TypingIndicator() {
   return (
     <View className="mb-4 flex-row items-end px-6">
-      <View className="mr-2 h-8 w-8 items-center justify-center rounded-full bg-[#EDE9F8]">
-        <Image source={mascot} style={{ width: 26, height: 26 }} contentFit="contain" />
+      <View className="mr-2 h-[34px] w-[34px] items-center justify-center rounded-full bg-[#EDE9F8]">
+        <Image source={mascot} style={{ width: 34, height: 34 }} contentFit="contain" />
       </View>
       <View className="flex-row items-center rounded-[20px] bg-[#F5F1FF] px-4 py-4">
         <Dot delay={0} />

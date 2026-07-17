@@ -16,6 +16,7 @@ export default function ChatInput({ value, onChangeText, onSend, disabled }: Pro
       <View
         className="flex-row items-center rounded-[18px] border border-[#E6D9FF] bg-white pl-4 pr-1.5"
         style={{
+          minHeight: 56,
           shadowColor: '#7C4DFF',
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.08,
@@ -42,7 +43,8 @@ export default function ChatInput({ value, onChangeText, onSend, disabled }: Pro
           className="h-10 w-10 items-center justify-center rounded-full bg-[#7C4DFF]"
           style={{ opacity: canSend ? 1 : 0.5 }}
         >
-          <Ionicons name="send" size={18} color="#FFFFFF" />
+          {/* Ionicons "send" glyph leans down-left; nudge it to optically center. */}
+          <Ionicons name="send" size={18} color="#FFFFFF" style={{ marginLeft: 2 }} />
         </TouchableOpacity>
       </View>
     </View>
