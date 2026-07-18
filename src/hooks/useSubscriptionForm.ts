@@ -114,13 +114,9 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
       return
     }
 
-    // Request permission in context (first sub only) and schedule the reminder.
+    // Request permission in context (if not yet decided) and schedule the reminder.
     const newSub = inserted as Subscription
-    const { count } = await supabase
-      .from('subscriptions')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-    const notifId = await scheduleNewSubscriptionReminder(newSub, count === 1)
+    const notifId = await scheduleNewSubscriptionReminder(newSub)
     if (notifId) {
       await supabase
         .from('subscriptions')

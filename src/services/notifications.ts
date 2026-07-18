@@ -6,17 +6,8 @@ import { useProfileStore } from '@/store/profileStore'
 import { computeNextRenewalDate } from '@/utils/renewalDates'
 import { formatCurrency } from '@/utils/currency'
 import type { Subscription } from '@/types/subscription'
-import type { BillingPeriod } from '@/constants/subscriptionOptions'
 
 const ANDROID_CHANNEL_ID = 'renewals'
-
-// Human-readable billing cadence used in the reminder body, e.g. "€9.99/mo".
-const PERIOD_SHORT: Record<BillingPeriod, string> = {
-  weekly: 'wk',
-  monthly: 'mo',
-  yearly: 'yr',
-  once: 'once',
-}
 
 /**
  * Android 8+ requires notifications to belong to a channel. Idempotent —
@@ -47,7 +38,9 @@ export async function requestPermission(): Promise<boolean> {
  * Free-trial subs bill from their trial end date. Returns null when there is
  * no future reminder to schedule.
  */
-function reminderTiming(sub: Subscription): { remind: Date; renewal: Date } | null {
+function reminderTiming(
+  sub: Subscription
+): { remind: Date; daysBefore: number } | null {
   if (sub.billing_period === 'once') return null
 
   // A trial isn't charged until it ends — bill from trial_end_date if present.
@@ -61,7 +54,7 @@ function reminderTiming(sub: Subscription): { remind: Date; renewal: Date } | nu
 
   // Don't schedule a reminder whose fire time has already passed.
   if (remind.getTime() <= Date.now()) return null
-  return { remind, renewal }
+  return { remind, daysBefore }
 }
 
 /**
@@ -74,18 +67,17 @@ export async function scheduleRenewalReminder(
 ): Promise<string | null> {
   const timing = reminderTiming(sub)
   if (!timing) return null
-  const { remind, renewal } = timing
+  const { remind, daysBefore } = timing
 
   await ensureAndroidChannel()
 
   const price = formatCurrency(sub.price, sub.currency)
-  const period = PERIOD_SHORT[sub.billing_period]
-  const renewalLabel = formatReminderDate(renewal)
+  const dayLabel = daysBefore === 1 ? 'day' : 'days'
 
   return Notifications.scheduleNotificationAsync({
     content: {
-      title: `${sub.name} renews soon`,
-      body: `Your ${sub.name} subscription (${price}/${period}) renews on ${renewalLabel}. Tap to review.`,
+      title: sub.name,
+      body: `${sub.name} renews after ${daysBefore} ${dayLabel} — ${price}`,
       data: { subscriptionId: sub.id },
     },
     trigger: {
@@ -120,19 +112,20 @@ function primeAndRequestPermission(): Promise<boolean> {
 
 /**
  * Post-insert orchestration for a newly added subscription. Requests
- * notification permission in context (with a priming Alert) only when this is
- * the user's first subscription and permission hasn't been decided yet, then
- * schedules the reminder if permission is granted. Returns the scheduled
- * notification identifier to persist, or null.
+ * notification permission in context (with a priming Alert) whenever it hasn't
+ * been decided yet — the OS only shows its dialog once, so an already-denied
+ * user is never nagged again. Schedules the reminder if permission is granted.
+ * Returns the scheduled notification identifier to persist, or null.
  */
 export async function scheduleNewSubscriptionReminder(
-  sub: Subscription,
-  isFirstSubscription: boolean
+  sub: Subscription
 ): Promise<string | null> {
-  const { status } = await Notifications.getPermissionsAsync()
+  const { status, canAskAgain } = await Notifications.getPermissionsAsync()
   let granted = status === 'granted'
 
-  if (!granted && isFirstSubscription) {
+  // Only prime + prompt when the OS will actually surface a dialog (permission
+  // still undetermined). If the user previously denied, stay silent.
+  if (!granted && canAskAgain) {
     granted = await primeAndRequestPermission()
   }
 
@@ -179,9 +172,4 @@ export async function rescheduleAllReminders(subs: Subscription[]): Promise<void
         .eq('id', sub.id)
     }
   }
-}
-
-// Reminder body date, e.g. "20 Jul 2026".
-function formatReminderDate(d: Date): string {
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
