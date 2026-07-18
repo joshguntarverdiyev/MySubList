@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useProfileStore } from '@/store/profileStore'
 import { useSubscriptionStore } from '@/store/subscriptionStore'
 import { deleteAccount } from '@/services/account'
+import { cancelAllRenewalReminders } from '@/services/notifications'
 import SettingsCard from './SettingsCard'
 import SettingsRow from './SettingsRow'
 
@@ -36,6 +37,8 @@ export default function DangerZone() {
   const runDelete = useCallback(async () => {
     setDeleting(true)
     try {
+      // Clear all scheduled local reminders before the account and its data go.
+      await cancelAllRenewalReminders()
       await deleteAccount()
       clearStores()
       await SecureStore.deleteItemAsync('onboarding_complete')

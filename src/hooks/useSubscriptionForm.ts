@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Alert } from 'react-native'
 import { router } from 'expo-router'
 import { format, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
@@ -6,6 +7,7 @@ import type { BillingPeriod } from '@/constants/subscriptionOptions'
 import type { Subscription } from '@/types/subscription'
 import { initialRenewalDate } from '@/utils/renewal'
 import { useSubscriptionStore } from '@/store/subscriptionStore'
+import { scheduleNewSubscriptionReminder, rescheduleRenewalReminder } from '@/services/notifications'
 
 interface FormErrors {
   name?: string
@@ -73,28 +75,61 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
         .update({ ...fields, updated_at: new Date().toISOString() })
         .eq('id', subscription!.id)
         .eq('user_id', user.id)
-      setLoading(false)
       if (error) {
+        setLoading(false)
         setApiError('Could not save changes. Please try again.')
         return
       }
+      // Reschedule the reminder with the updated dates/price, carrying the old
+      // notification_id so the previous reminder is cancelled first.
+      const updatedSub = { ...subscription!, ...fields }
+      const notifId = await rescheduleRenewalReminder(updatedSub)
+      if (notifId !== subscription!.notification_id) {
+        await supabase
+          .from('subscriptions')
+          .update({ notification_id: notifId })
+          .eq('id', subscription!.id)
+          .eq('user_id', user.id)
+      }
+      setLoading(false)
       await useSubscriptionStore.getState().refreshSubscriptions(user.id)
       // Replace so the Details screen remounts and reloads with fresh data.
       router.replace(`/subscription/${subscription!.id}` as any)
       return
     }
 
-    const { error } = await supabase.from('subscriptions').insert({
-      ...fields,
-      user_id: user.id,
-      brand_key: brandKey || null,
-      is_active: true,
-    })
-    setLoading(false)
-    if (error) {
+    const { data: inserted, error } = await supabase
+      .from('subscriptions')
+      .insert({
+        ...fields,
+        user_id: user.id,
+        brand_key: brandKey || null,
+        is_active: true,
+      })
+      .select('*')
+      .single()
+    if (error || !inserted) {
+      setLoading(false)
       setApiError('Could not save subscription. Please try again.')
       return
     }
+
+    // Request permission in context (first sub only) and schedule the reminder.
+    const newSub = inserted as Subscription
+    const { count } = await supabase
+      .from('subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+    const notifId = await scheduleNewSubscriptionReminder(newSub, count === 1)
+    if (notifId) {
+      await supabase
+        .from('subscriptions')
+        .update({ notification_id: notifId })
+        .eq('id', newSub.id)
+        .eq('user_id', user.id)
+    }
+
+    setLoading(false)
     // Dismiss the modal stack (new + add) to reveal the existing Home tab underneath,
     // instead of pushing a brand-new Home inside the modal presentation.
     router.dismissAll()

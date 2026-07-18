@@ -5,6 +5,8 @@ import { useFocusEffect, router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useUserId } from '@/hooks/useUserId'
 import { useProfileStore } from '@/store/profileStore'
+import { getUserSubscriptions } from '@/services/subscriptions'
+import { rescheduleAllReminders } from '@/services/notifications'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import ProfileCard from '@/components/profile/ProfileCard'
 import SettingsCard from '@/components/profile/SettingsCard'
@@ -44,6 +46,19 @@ export default function ProfileScreen() {
       if (userId) await supabase.from('profiles').update(patch).eq('id', userId)
     },
     [userId],
+  )
+
+  // Changing the lead time must reschedule every active reminder to the new
+  // timing. Runs after the preference is saved (setNotificationDays already
+  // applied, so scheduleRenewalReminder reads the updated value).
+  const persistNotificationDays = useCallback(
+    async (days: number) => {
+      await persist({ notification_days_before: days }, () => s.setNotificationDays(days))
+      if (!userId) return
+      const subs = await getUserSubscriptions(userId)
+      await rescheduleAllReminders(subs)
+    },
+    [persist, userId, s],
   )
 
   return (
@@ -117,7 +132,7 @@ export default function ProfileScreen() {
         title="Notify me before renewal"
         options={NOTIFICATION_OPTIONS}
         selected={s.notification_days_before}
-        onSelect={(v) => persist({ notification_days_before: v }, () => s.setNotificationDays(v))}
+        onSelect={(v) => persistNotificationDays(v)}
         onClose={() => setSheet(null)}
       />
       <OptionSheet
