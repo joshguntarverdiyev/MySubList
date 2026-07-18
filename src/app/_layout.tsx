@@ -3,10 +3,12 @@ import '../global.css';
 import { Stack, router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
+import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { supabase } from '@/lib/supabase';
 
 // Show reminders as a banner even if the app is foregrounded when one fires.
 Notifications.setNotificationHandler({
@@ -39,6 +41,33 @@ export default function RootLayout() {
       router.replace('/(tabs)' as any);
     });
     return () => sub.remove();
+  }, []);
+
+  // Handle password-reset deep links (mysublist://reset-password). Supabase
+  // appends the session tokens in the URL hash fragment; we set the session
+  // manually (detectSessionInUrl is off for native) then open the reset screen.
+  useEffect(() => {
+    const handleDeepLink = async (url: string) => {
+      if (!url.includes('reset-password')) return;
+      const fragment = url.split('#')[1] || url.split('?')[1] || '';
+      const params = new URLSearchParams(fragment);
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (!access_token || !refresh_token) return;
+
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (!error) router.push('/(auth)/reset-password' as any);
+    };
+
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
+    });
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    return () => subscription.remove();
   }, []);
 
   return (

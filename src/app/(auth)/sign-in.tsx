@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -59,7 +58,7 @@ export default function SignInScreen() {
   }
 
   function handleForgotPassword() {
-    Alert.alert('Coming Soon', 'Password reset is coming in a future update.')
+    router.push('/(auth)/forgot-password')
   }
 
   return (
