@@ -108,7 +108,7 @@ MySubList helps people track all their digital subscriptions in one place, see u
 - Savings card: (a) free trials ending within 30 days, (b) monthly subs where yearly < monthly×12 — total + breakdown, tap to expand
 - Calendar: hand-built FlatList grid, colored dots, logos, legend, filter
 - AI Advisor: persisted chat, Gemini via Edge Function, 5/day free limit
-- Local scheduled renewal reminders (global lead time, default 2 days)
+- Local scheduled renewal reminders (global lead time, default 2 days) ✅
 - Profile & settings (currency, language, first day of week, notifications, change password, delete account)
 
 **v2+ (future):**
