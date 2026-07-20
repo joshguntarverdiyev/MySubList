@@ -43,12 +43,16 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
-  // Handle password-reset deep links (mysublist://reset-password). Supabase
-  // appends the session tokens in the URL hash fragment; we set the session
-  // manually (detectSessionInUrl is off for native) then open the reset screen.
+  // Handle Supabase auth deep links: password reset (mysublist://reset-password)
+  // and email confirmation (mysublist://confirmed). Both carry the session
+  // tokens in the URL hash fragment; we set the session manually (detectSessionInUrl
+  // is off for native) then route to the right place.
   useEffect(() => {
     const handleDeepLink = async (url: string) => {
-      if (!url.includes('reset-password')) return;
+      const isReset = url.includes('reset-password');
+      const isConfirm = url.includes('confirmed');
+      if (!isReset && !isConfirm) return;
+
       const fragment = url.split('#')[1] || url.split('?')[1] || '';
       const params = new URLSearchParams(fragment);
       const access_token = params.get('access_token');
@@ -56,7 +60,8 @@ export default function RootLayout() {
       if (!access_token || !refresh_token) return;
 
       const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (!error) router.push('/(auth)/reset-password' as any);
+      if (error) return;
+      router.replace((isReset ? '/(auth)/reset-password' : '/(tabs)') as any);
     };
 
     Linking.getInitialURL().then((url) => {

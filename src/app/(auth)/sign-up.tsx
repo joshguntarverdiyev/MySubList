@@ -13,7 +13,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, Link } from 'expo-router'
+import * as Linking from 'expo-linking'
 import { supabase } from '@/lib/supabase'
+
+const TERMS_URL = 'https://mysublist.app/terms'
+const PRIVACY_URL = 'https://mysublist.app/privacy'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -34,6 +38,7 @@ export default function SignUpScreen() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
 
   function validate(): boolean {
     const errors: FieldErrors = {}
@@ -50,10 +55,14 @@ export default function SignUpScreen() {
     if (!validate()) return
 
     setLoading(true)
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
+    const trimmedEmail = email.trim()
+    const { data, error } = await supabase.auth.signUp({
+      email: trimmedEmail,
       password,
-      options: { data: { full_name: fullName.trim() } },
+      options: {
+        data: { full_name: fullName.trim() },
+        emailRedirectTo: 'mysublist://confirmed',
+      },
     })
     setLoading(false)
 
@@ -62,7 +71,14 @@ export default function SignUpScreen() {
       return
     }
 
-    router.replace('/(tabs)' as any)
+    // With "Confirm email" on, signUp returns no session until the user taps the
+    // link — send them to the verify screen. If confirmation is off, a session
+    // is present and we go straight into the app.
+    if (data.session) {
+      router.replace('/(tabs)' as any)
+    } else {
+      router.replace({ pathname: '/(auth)/verify-email', params: { email: trimmedEmail } } as any)
+    }
   }
 
   return (
@@ -204,12 +220,51 @@ export default function SignUpScreen() {
             ) : null}
           </View>
 
+          {/* Terms acceptance */}
+          <View className="flex-row items-start mt-1">
+            <TouchableOpacity
+              onPress={() => setAgreed((v) => !v)}
+              hitSlop={8}
+              activeOpacity={0.7}
+              className="pt-0.5"
+            >
+              <Ionicons
+                name={agreed ? 'checkbox' : 'checkbox-outline'}
+                size={22}
+                color="#7C4DFF"
+              />
+            </TouchableOpacity>
+            <Text className="flex-1 ml-2.5 text-xs leading-5 text-[#6B7280]">
+              I agree to the{' '}
+              <Text
+                className="text-[#7C4DFF] underline"
+                onPress={() => Linking.openURL(TERMS_URL)}
+              >
+                Terms of Service
+              </Text>
+              {' '}and{' '}
+              <Text
+                className="text-[#7C4DFF] underline"
+                onPress={() => Linking.openURL(PRIVACY_URL)}
+              >
+                Privacy Policy
+              </Text>
+            </Text>
+          </View>
+
           {/* Submit button */}
           <TouchableOpacity
             className="h-14 rounded-full bg-[#7C4DFF] items-center justify-center mt-2"
-            style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 8 }}
+            style={{
+              opacity: agreed ? 1 : 0.5,
+              shadowColor: '#7C4DFF',
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.22,
+              shadowRadius: 24,
+              elevation: 8,
+            }}
             onPress={handleSignUp}
-            disabled={loading}
+            disabled={loading || !agreed}
             activeOpacity={0.85}
           >
             {loading ? (

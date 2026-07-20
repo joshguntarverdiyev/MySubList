@@ -125,4 +125,4 @@ MySubList helps people track all their digital subscriptions in one place, see u
 | Calendar date math | Medium | date-fns only; store plain `date`; clamp month-end; hand-built FlatList grid |
 | Gemini key security | High | Supabase Edge Function; key in server secret; rate-limit server-side |
 | RevenueCat paywall | Deferred | Needs EAS dev build (no Expo Go); `is_premium` cache, RevenueCat = truth |
-| Local notifications | Low–Med | expo-notifications local only; store `notification_id`; request permission in context; iOS ~64 pending cap → schedule next occurrence per sub only; `once`/inactive get none |
+| Local notifications | Low–Med | expo-notifications local only; store `notification_id`; request permission in context on every add while undetermined (prime-before-prompt; OS shows dialog once); iOS ~64 pending cap → schedule next occurrence per sub only; `once`/inactive get none |

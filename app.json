@@ -12,7 +12,10 @@
         "backgroundColor": "#7C4DFF",
         "foregroundImage": "./assets/icon.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static"
@@ -43,14 +46,26 @@
           "color": "#6C47D9",
           "sounds": []
         }
-      ]
+      ],
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
     "ios": {
-      "bundleIdentifier": "com.joshguntarverdiyev.MySubList"
+      "bundleIdentifier": "com.joshguntarverdiyev.MySubList",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "180f3587-4867-4334-a606-be41303c6b67"
+      }
     }
   }
 }

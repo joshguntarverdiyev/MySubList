@@ -154,8 +154,7 @@ export default function ProfileScreen() {
 
       <InfoModal
         visible={info !== null}
-        title={info ? INFO[info].title : ''}
-        body={info ? INFO[info].body : ''}
+        entry={info ? INFO[info] : null}
         onClose={() => setInfo(null)}
       />
     </View>
