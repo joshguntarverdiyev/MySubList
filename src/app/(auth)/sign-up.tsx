@@ -221,20 +221,18 @@ export default function SignUpScreen() {
           </View>
 
           {/* Terms acceptance */}
-          <View className="flex-row items-start mt-1">
+          <View className="flex-row items-center mt-1">
             <TouchableOpacity
               onPress={() => setAgreed((v) => !v)}
               hitSlop={8}
               activeOpacity={0.7}
-              className="pt-0.5"
             >
-              <Ionicons
-                name={agreed ? 'checkbox' : 'checkbox-outline'}
-                size={22}
-                color="#7C4DFF"
-              />
+              {agreed
+                ? <Ionicons name="checkbox" size={22} color="#7C4DFF" />
+                : <Ionicons name="square-outline" size={22} color="#6B7280" />
+              }
             </TouchableOpacity>
-            <Text className="flex-1 ml-2.5 text-xs leading-5 text-[#6B7280]">
+            <Text className="flex-1 ml-2.5 text-xs leading-5 text-[#1A1A2E]">
               I agree to the{' '}
               <Text
                 className="text-[#7C4DFF] underline"
