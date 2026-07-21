@@ -2,6 +2,7 @@ import { Modal, View, Text, Pressable, ScrollView, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import type { InfoEntry } from '@/constants/legal'
+import HelpContent from './HelpContent'
 
 interface Props {
   visible: boolean
@@ -32,7 +33,9 @@ export default function InfoModal({ visible, entry, onClose }: Props) {
             contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}
             showsVerticalScrollIndicator={false}
           >
-            {entry?.bullets ? (
+            {entry?.faqs ? (
+              <HelpContent entry={entry} />
+            ) : entry?.bullets ? (
               <View className="gap-y-3">
                 {entry.bullets.map((b) => (
                   <View key={b} className="flex-row">
