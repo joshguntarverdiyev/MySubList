@@ -43,14 +43,15 @@ export default function PaywallScreen() {
   const monthlyPrice = offering?.monthly?.product.priceString ?? '€3.99'
   const yearlyPrice = offering?.annual?.product.priceString ?? '€29.99'
 
-  // Only show the trial badge if the selected plan actually has a free intro
-  // offer in the store — the monthly product has a 7-day trial, the yearly may
-  // not. Reading it from RevenueCat keeps the UI honest whatever the store config.
+  // Both plans are marketed with a 7-day trial (also being added to the Yearly
+  // product in App Store Connect), so the trial UI is shown on both. Use the
+  // store's real trial length when available, otherwise fall back to 7 days.
   const UNIT_DAYS: Record<string, number> = { DAY: 1, WEEK: 7, MONTH: 30, YEAR: 365 }
   const selectedPkg = selectedPlan === 'yearly' ? offering?.annual : offering?.monthly
   const intro = selectedPkg?.product.introPrice
-  const hasTrial = !!intro && intro.price === 0
-  const trialDays = intro ? intro.periodNumberOfUnits * (UNIT_DAYS[intro.periodUnit] ?? 1) : 0
+  const hasTrial = true
+  const trialDays =
+    intro && intro.price === 0 ? intro.periodNumberOfUnits * (UNIT_DAYS[intro.periodUnit] ?? 1) : 7
 
   const handleSubscribe = async () => {
     if (!offering) return
