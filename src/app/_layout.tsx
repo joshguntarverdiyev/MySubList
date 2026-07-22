@@ -9,6 +9,8 @@ import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
+import { useUserId } from '@/hooks/useUserId';
+import { configureRevenueCat } from '@/lib/revenuecat';
 
 // Show reminders as a banner even if the app is foregrounded when one fires.
 Notifications.setNotificationHandler({
@@ -22,6 +24,13 @@ Notifications.setNotificationHandler({
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
+  const userId = useUserId();
+
+  // Initialize RevenueCat once we know who the user is, before any screen
+  // runs a premium/entitlement check. Links purchases to the Supabase user id.
+  useEffect(() => {
+    if (userId) configureRevenueCat(userId);
+  }, [userId]);
 
   useEffect(() => {
     SecureStore.getItemAsync('onboarding_complete').then((value) => {
