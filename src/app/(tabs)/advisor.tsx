@@ -34,6 +34,7 @@ export default function AdvisorScreen() {
   const avatarUrl = useProfileStore((s) => s.avatar_url)
   const fullName = useProfileStore((s) => s.full_name)
   const fetchProfile = useProfileStore((s) => s.fetchProfile)
+  const isPremium = useProfileStore((s) => s.is_premium)
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
@@ -92,19 +93,21 @@ export default function AdvisorScreen() {
         const reply = await sendAdvisorMessage(trimmed)
         appendAssistant(reply, `ai-${now}`)
       } catch (err) {
-        const content =
-          err instanceof DailyLimitError
-            ? LIMIT_MSG
-            : err instanceof ValidationError
-              ? err.message
-              : ERROR_MSG
+        const isLimit = err instanceof DailyLimitError
+        const content = isLimit
+          ? LIMIT_MSG
+          : err instanceof ValidationError
+            ? err.message
+            : ERROR_MSG
         appendAssistant(content, `err-${now}`)
+        // Free users hitting the daily cap get the paywall (premium never 429s).
+        if (isLimit && !isPremium) router.push('/paywall' as any)
       } finally {
         setTyping(false)
         scrollToEnd()
       }
     },
-    [typing, scrollToEnd, appendAssistant],
+    [typing, scrollToEnd, appendAssistant, isPremium],
   )
 
   return (

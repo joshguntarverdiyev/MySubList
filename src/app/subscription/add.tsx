@@ -1,14 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { POPULAR_SERVICES, type Service } from '@/constants/services'
 import ServiceCard from '@/components/subscription/ServiceCard'
+import { useSubscriptionStore } from '@/store/subscriptionStore'
+import { useProfileStore } from '@/store/profileStore'
+
+const FREE_SUB_LIMIT = 5
 
 export default function AddSubscription() {
   const insets = useSafeAreaInsets()
   const [query, setQuery] = useState('')
+
+  // Free tier caps active subscriptions; over the limit we send the user to the
+  // paywall instead of the add form. Enforced server-side too — this is UX only.
+  const isPremium = useProfileStore((s) => s.is_premium)
+  const activeCount = useSubscriptionStore((s) => s.subscriptions.length)
+  const blocked = !isPremium && activeCount >= FREE_SUB_LIMIT
+
+  useEffect(() => {
+    if (blocked) router.replace('/paywall' as any)
+  }, [blocked])
+
+  if (blocked) return null
 
   const filtered = POPULAR_SERVICES.filter((s) =>
     s.name.toLowerCase().includes(query.trim().toLowerCase())
