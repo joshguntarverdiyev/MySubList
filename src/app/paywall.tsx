@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Pressable } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -8,6 +8,7 @@ import { useProfileStore } from '@/store/profileStore'
 import HeroSection from '@/components/paywall/HeroSection'
 import FeatureRow from '@/components/paywall/FeatureRow'
 import PlanCard from '@/components/paywall/PlanCard'
+import PaywallActions from '@/components/paywall/PaywallActions'
 
 const ENTITLEMENT = 'MySubList Pro'
 const FEATURES = [
@@ -41,6 +42,15 @@ export default function PaywallScreen() {
 
   const monthlyPrice = offering?.monthly?.product.priceString ?? '€3.99'
   const yearlyPrice = offering?.annual?.product.priceString ?? '€29.99'
+
+  // Only show the trial badge if the selected plan actually has a free intro
+  // offer in the store — the monthly product has a 7-day trial, the yearly may
+  // not. Reading it from RevenueCat keeps the UI honest whatever the store config.
+  const UNIT_DAYS: Record<string, number> = { DAY: 1, WEEK: 7, MONTH: 30, YEAR: 365 }
+  const selectedPkg = selectedPlan === 'yearly' ? offering?.annual : offering?.monthly
+  const intro = selectedPkg?.product.introPrice
+  const hasTrial = !!intro && intro.price === 0
+  const trialDays = intro ? intro.periodNumberOfUnits * (UNIT_DAYS[intro.periodUnit] ?? 1) : 0
 
   const handleSubscribe = async () => {
     if (!offering) return
@@ -80,13 +90,24 @@ export default function PaywallScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <Pressable
+      <TouchableOpacity
         onPress={() => router.back()}
-        hitSlop={8}
-        style={{ position: 'absolute', top: insets.top + 8, left: 16, zIndex: 10 }}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
+        className="absolute h-11 w-11 items-center justify-center rounded-[18px] border border-[#EFE9FF] bg-white"
+        style={{
+          top: insets.top + 8,
+          right: 16,
+          zIndex: 10,
+          shadowColor: '#7C4DFF',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.1,
+          shadowRadius: 20,
+          elevation: 3,
+        }}
       >
-        <Ionicons name="close-outline" size={24} color="#6B7280" />
-      </Pressable>
+        <Ionicons name="close" size={22} color="#7C4DFF" />
+      </TouchableOpacity>
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
         <HeroSection topInset={insets.top} />
@@ -110,34 +131,13 @@ export default function PaywallScreen() {
           />
         </View>
 
-        <View className="mt-4 items-center">
-          <View className="flex-row items-center gap-x-1.5">
-            <Ionicons name="gift-outline" size={16} color="#6C47D9" />
-            <Text className="text-[14px] font-bold text-[#6C47D9]">Start your 7-day free trial</Text>
-          </View>
-          <Text className="mt-0.5 text-[12px] text-[#6B7280]">Cancel anytime</Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={handleSubscribe}
-          disabled={purchasing}
-          activeOpacity={0.85}
-          className="mx-5 mt-5 h-14 items-center justify-center rounded-xl bg-[#6C47D9]"
-          style={{ opacity: purchasing ? 0.6 : 1 }}
-        >
-          {purchasing ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text className="text-[16px] font-bold text-white">Start Free Trial</Text>
-          )}
-        </TouchableOpacity>
-
-        <Text onPress={handleRestore} className="mt-4 text-center text-[14px] text-[#6B7280]">
-          Restore Purchases
-        </Text>
-        <Text className="mx-8 mt-3 text-center text-[11px] text-[#9CA3AF]">
-          Recurring billing. Cancel anytime in App Store settings. Payment charged to your Apple ID.
-        </Text>
+        <PaywallActions
+          hasTrial={hasTrial}
+          trialDays={trialDays}
+          purchasing={purchasing}
+          onSubscribe={handleSubscribe}
+          onRestore={handleRestore}
+        />
       </ScrollView>
     </View>
   )
