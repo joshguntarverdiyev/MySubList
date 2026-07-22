@@ -15,6 +15,7 @@ interface ProfileState {
   setFirstDayOfWeek: (day: number) => void
   setNotificationDays: (days: number) => void
   setAvatarUrl: (url: string | null) => void
+  setPremium: (value: boolean) => Promise<void>
   reset: () => void
 }
 
@@ -60,5 +61,13 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setFirstDayOfWeek: (first_day_of_week) => set({ first_day_of_week }),
   setNotificationDays: (notification_days_before) => set({ notification_days_before }),
   setAvatarUrl: (avatar_url) => set({ avatar_url }),
+  // Update the local cache immediately, then sync to Supabase. RevenueCat is the
+  // source of truth for entitlements; profiles.is_premium is just a cache.
+  setPremium: async (value) => {
+    set({ is_premium: value })
+    const { data } = await supabase.auth.getUser()
+    const userId = data.user?.id
+    if (userId) await supabase.from('profiles').update({ is_premium: value }).eq('id', userId)
+  },
   reset: () => set({ ...DEFAULTS }),
 }))

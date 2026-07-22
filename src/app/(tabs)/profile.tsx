@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { View, Text, ScrollView, Alert } from 'react-native'
+import { View, Text, ScrollView, Alert, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect, router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
@@ -81,6 +81,21 @@ export default function ProfileScreen() {
           onPressCard={() => router.push('/profile/account')}
           onPressCamera={chooseAvatar}
         />
+
+        {!s.is_premium ? (
+          <Pressable
+            onPress={() => router.push('/paywall' as any)}
+            className="mt-4 flex-row items-center justify-between rounded-2xl border-l-4 border-[#6C47D9] bg-white px-4 py-4"
+          >
+            <View className="flex-1 pr-3">
+              <Text className="text-[15px] font-bold text-[#1A1A2E]">⭐ Upgrade to Pro</Text>
+              <Text className="mt-0.5 text-[13px] text-[#6B7280]">
+                Unlock unlimited subscriptions and AI advice
+              </Text>
+            </View>
+            <Text className="text-[14px] font-bold text-[#6C47D9]">Upgrade →</Text>
+          </Pressable>
+        ) : null}
 
         <SettingsCard title="PREFERENCES">
           <SettingsRow
