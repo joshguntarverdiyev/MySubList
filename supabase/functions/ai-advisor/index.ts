@@ -394,10 +394,12 @@ Deno.serve(async (req) => {
     contents,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 400,
-      // Gemini 2.5 Flash is a thinking model; without this it burns the
-      // token budget on internal reasoning and returns truncated replies.
-      thinkingConfig: { thinkingBudget: 0 },
+      maxOutputTokens: 1200,
+      // gemini-flash-latest is now Gemini 3 Flash, a thinking model. Gemini 3
+      // uses thinkingLevel (the old `thinkingBudget: 0` now returns HTTP 400).
+      // "low" keeps latency/cost down; the higher token cap leaves room for the
+      // internal reasoning plus a full reply (output is sliced to MAX_REPLY_LENGTH).
+      thinkingConfig: { thinkingLevel: "low" },
     },
   });
 
