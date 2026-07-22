@@ -8,9 +8,11 @@ interface DropdownProps {
   placeholder: string
   options: readonly string[]
   onSelect: (value: string) => void
+  /** Values shown with a lock icon (still selectable — parent handles the gate). */
+  lockedValues?: readonly string[]
 }
 
-export default function Dropdown({ label, value, placeholder, options, onSelect }: DropdownProps) {
+export default function Dropdown({ label, value, placeholder, options, onSelect, lockedValues }: DropdownProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -41,11 +43,14 @@ export default function Dropdown({ label, value, placeholder, options, onSelect 
                   onSelect(opt)
                   setOpen(false)
                 }}
-                className={`px-5 py-4 ${i > 0 ? 'border-t border-[#F0EBFF]' : ''}`}
+                className={`flex-row items-center justify-between px-5 py-4 ${i > 0 ? 'border-t border-[#F0EBFF]' : ''}`}
               >
                 <Text className={opt === value ? 'text-[16px] font-semibold text-[#7C4DFF]' : 'text-[16px] text-[#111827]'}>
                   {opt}
                 </Text>
+                {lockedValues?.includes(opt) ? (
+                  <Ionicons name="lock-closed" size={15} color="#9CA3AF" />
+                ) : null}
               </TouchableOpacity>
             ))}
           </View>

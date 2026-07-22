@@ -14,6 +14,8 @@ interface Props<T> {
   selected: T
   onSelect: (value: T) => void
   onClose: () => void
+  /** Values shown with a lock icon (still selectable — parent handles the gate). */
+  lockedValues?: T[]
 }
 
 /** Themed bottom-sheet modal for single-select settings. */
@@ -24,6 +26,7 @@ export default function OptionSheet<T extends string | number>({
   selected,
   onSelect,
   onClose,
+  lockedValues,
 }: Props<T>) {
   const insets = useSafeAreaInsets()
 
@@ -62,7 +65,11 @@ export default function OptionSheet<T extends string | number>({
                 >
                   {opt.label}
                 </Text>
-                {active && <Ionicons name="checkmark" size={20} color="#7C4DFF" />}
+                {active ? (
+                  <Ionicons name="checkmark" size={20} color="#7C4DFF" />
+                ) : lockedValues?.includes(opt.value) ? (
+                  <Ionicons name="lock-closed" size={16} color="#9CA3AF" />
+                ) : null}
               </Pressable>
             )
           })}

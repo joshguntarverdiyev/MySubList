@@ -1,5 +1,7 @@
 import { View, Text, TextInput, Switch } from 'react-native'
-import { CURRENCIES, PAYMENT_METHODS } from '@/constants/subscriptionOptions'
+import { router } from 'expo-router'
+import { CURRENCIES, FREE_CURRENCIES, PAYMENT_METHODS, isCurrencyLocked } from '@/constants/subscriptionOptions'
+import { useProfileStore } from '@/store/profileStore'
 import type { useSubscriptionForm } from '@/hooks/useSubscriptionForm'
 import Dropdown from '@/components/subscription/Dropdown'
 import BillingPeriodSelector from '@/components/subscription/BillingPeriodSelector'
@@ -11,6 +13,8 @@ interface SubscriptionFormFieldsProps {
 }
 
 export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProps) {
+  const isPremium = useProfileStore((s) => s.is_premium)
+  const lockedCurrencies = isPremium ? [] : CURRENCIES.filter((c) => !FREE_CURRENCIES.includes(c))
   return (
     <View className="bg-white rounded-2xl mx-6 p-5 gap-y-5" style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 4 }}>
       {f.apiError ? <Text className="text-[13px] text-[#EF4444]">{f.apiError}</Text> : null}
@@ -31,7 +35,14 @@ export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProp
           {f.errors.price ? <Text className="text-[12px] text-[#EF4444] mt-1">{f.errors.price}</Text> : null}
         </View>
         <View style={{ width: '44%' }}>
-          <Dropdown label="Currency" value={f.currency} placeholder="EUR" options={CURRENCIES} onSelect={f.setCurrency} />
+          <Dropdown
+            label="Currency"
+            value={f.currency}
+            placeholder="EUR"
+            options={CURRENCIES}
+            lockedValues={lockedCurrencies}
+            onSelect={(v) => (isCurrencyLocked(v, isPremium) ? router.push('/paywall' as any) : f.setCurrency(v))}
+          />
         </View>
       </View>
 

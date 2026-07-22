@@ -1,5 +1,13 @@
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'TRY', 'CAD', 'AUD', 'JPY'] as const
 
+/** Currencies available on the free tier; the rest are Pro (multi-currency). */
+export const FREE_CURRENCIES = ['EUR', 'USD']
+
+/** True when a free user tries to use a Pro-only currency → gate to paywall. */
+export function isCurrencyLocked(value: string, isPremium: boolean): boolean {
+  return !isPremium && !FREE_CURRENCIES.includes(value)
+}
+
 export const PAYMENT_METHODS = [
   'Visa',
   'Mastercard',

@@ -23,6 +23,7 @@ import {
   firstDayLabel,
 } from '@/constants/preferenceOptions'
 import { INFO } from '@/constants/legal'
+import { FREE_CURRENCIES, isCurrencyLocked } from '@/constants/subscriptionOptions'
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
@@ -155,7 +156,15 @@ export default function ProfileScreen() {
         title="Currency"
         options={CURRENCY_OPTIONS}
         selected={s.currency}
-        onSelect={(v) => persist({ currency: v }, () => s.setCurrency(v))}
+        lockedValues={s.is_premium ? [] : CURRENCY_OPTIONS.map((o) => o.value).filter((v) => !FREE_CURRENCIES.includes(v))}
+        onSelect={(v) => {
+          if (isCurrencyLocked(v, s.is_premium)) {
+            setSheet(null)
+            router.push('/paywall' as any)
+          } else {
+            persist({ currency: v }, () => s.setCurrency(v))
+          }
+        }}
         onClose={() => setSheet(null)}
       />
       <OptionSheet
