@@ -1,6 +1,7 @@
 import { Platform } from 'react-native'
 import Purchases, { LOG_LEVEL, type CustomerInfo } from 'react-native-purchases'
 import { useProfileStore } from '@/store/profileStore'
+import { supabase } from '@/lib/supabase'
 
 // iOS-only for now — no Android RevenueCat key is provisioned yet.
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
@@ -16,6 +17,12 @@ let configured = false
 function syncPremium(info: CustomerInfo) {
   const active = info.entitlements.active[ENTITLEMENT] !== undefined
   useProfileStore.getState().setPremium(active)
+  // Push the DB cache to match the real entitlement (server re-verifies with
+  // RevenueCat). Covers purchase/restore/transfer cases a webhook can miss, so
+  // server-side gates (sub limit, AI limit) never treat a Pro user as free.
+  supabase.functions.invoke('sync-premium').catch((e) => {
+    console.log('sync-premium error:', e)
+  })
 }
 
 /**
