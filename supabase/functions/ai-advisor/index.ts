@@ -321,23 +321,35 @@ Deno.serve(async (req) => {
   }
 
   // 4. DAILY MESSAGE LIMIT ----------------------------------------------------
-  const startOfDayUtc = new Date();
-  startOfDayUtc.setUTCHours(0, 0, 0, 0);
+  // Premium users get unlimited messages/day (the per-minute burst limit above
+  // still applies to everyone as cost/abuse protection). is_premium is a cache
+  // synced from RevenueCat; treat it as the entitlement source here.
+  const { data: premiumProfile } = await supabase
+    .from("profiles")
+    .select("is_premium")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isPremium = premiumProfile?.is_premium === true;
 
-  const { count, error: countError } = await supabase
-    .from("ai_messages")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "user")
-    .gte("created_at", startOfDayUtc.toISOString());
+  if (!isPremium) {
+    const startOfDayUtc = new Date();
+    startOfDayUtc.setUTCHours(0, 0, 0, 0);
 
-  if (countError) {
-    return json({ error: "Could not check message limit" }, 500);
-  }
-  if ((count ?? 0) >= DAILY_LIMIT) {
-    console.error(
-      `[ai-advisor] reject status=429 user=${user.id} reason="daily-limit"`,
-    );
-    return json({ error: "Daily message limit reached", limit: DAILY_LIMIT }, 429);
+    const { count, error: countError } = await supabase
+      .from("ai_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "user")
+      .gte("created_at", startOfDayUtc.toISOString());
+
+    if (countError) {
+      return json({ error: "Could not check message limit" }, 500);
+    }
+    if ((count ?? 0) >= DAILY_LIMIT) {
+      console.error(
+        `[ai-advisor] reject status=429 user=${user.id} reason="daily-limit"`,
+      );
+      return json({ error: "Daily message limit reached", limit: DAILY_LIMIT }, 429);
+    }
   }
 
   // Fetch last 10 messages for chat history (oldest -> newest).
