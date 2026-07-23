@@ -46,6 +46,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
       set({ email, loaded: true })
       return
     }
+    // NB: is_premium is intentionally NOT set here. The client's premium flag is
+    // owned by RevenueCat (see configureRevenueCat) so the webhook/DB lag can't
+    // clobber the UI after a purchase. The DB is_premium is for server-side
+    // enforcement only (AI limit, sub-limit trigger).
     set({
       full_name: data.full_name ?? '',
       email,
@@ -53,7 +57,6 @@ export const useProfileStore = create<ProfileState>((set) => ({
       currency: data.currency ?? 'EUR',
       first_day_of_week: data.first_day_of_week ?? 1,
       notification_days_before: data.notification_days_before ?? 2,
-      is_premium: data.is_premium ?? false,
       loaded: true,
     })
   },
