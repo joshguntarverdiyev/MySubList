@@ -110,6 +110,12 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
       .single()
     if (error || !inserted) {
       setLoading(false)
+      // Server-side free-tier guard (DB trigger) rejected the 6th subscription —
+      // send the user to the paywall instead of a generic error.
+      if (error?.message?.includes('free-subscription-limit-reached')) {
+        router.push('/paywall' as any)
+        return
+      }
       setApiError('Could not save subscription. Please try again.')
       return
     }

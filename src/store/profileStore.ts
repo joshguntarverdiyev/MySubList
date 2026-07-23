@@ -61,13 +61,12 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setFirstDayOfWeek: (first_day_of_week) => set({ first_day_of_week }),
   setNotificationDays: (notification_days_before) => set({ notification_days_before }),
   setAvatarUrl: (avatar_url) => set({ avatar_url }),
-  // Update the local cache immediately, then sync to Supabase. RevenueCat is the
-  // source of truth for entitlements; profiles.is_premium is just a cache.
+  // Local cache only, for instant UX right after a purchase/restore. The durable
+  // profiles.is_premium flag is set SERVER-SIDE by the RevenueCat webhook —
+  // clients can no longer write it (a DB trigger blocks it). Kept async so
+  // existing call sites (`await setPremium(true)`) don't need to change.
   setPremium: async (value) => {
     set({ is_premium: value })
-    const { data } = await supabase.auth.getUser()
-    const userId = data.user?.id
-    if (userId) await supabase.from('profiles').update({ is_premium: value }).eq('id', userId)
   },
   reset: () => set({ ...DEFAULTS }),
 }))
