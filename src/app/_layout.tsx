@@ -32,15 +32,29 @@ export default function RootLayout() {
     if (userId) configureRevenueCat(userId);
   }, [userId]);
 
+  // Startup routing: onboarding first, otherwise gate on the persisted Supabase
+  // session so a signed-in user lands on the tabs instead of the sign-in screen.
   useEffect(() => {
-    SecureStore.getItemAsync('onboarding_complete').then((value) => {
-      if (value === 'true') {
-        router.replace('/(auth)/sign-in' as any);
-      } else {
+    (async () => {
+      const onboarded = await SecureStore.getItemAsync('onboarding_complete');
+      if (onboarded !== 'true') {
         router.replace('/(onboarding)/welcome' as any);
+      } else {
+        const { data } = await supabase.auth.getSession();
+        router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in') as any);
       }
       setReady(true);
+    })();
+  }, []);
+
+  // Send the user back to sign-in on sign-out / account deletion / failed token
+  // refresh. (SIGNED_IN is intentionally not handled here — the auth screens and
+  // deep-link handler route those, to avoid overriding e.g. password reset.)
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') router.replace('/(auth)/sign-in' as any);
     });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   // Tapping a renewal reminder opens the app to Home. Deep-linking straight to
