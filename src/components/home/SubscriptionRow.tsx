@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import BrandLogo from '@/components/subscription/BrandLogo'
 
 export interface SubscriptionItem {
   id: string
@@ -9,7 +10,7 @@ export interface SubscriptionItem {
   price: string
   period: string
   color: string
-  initial: string
+  brandKey: string | null
 }
 
 interface Props {
@@ -25,12 +26,9 @@ export default function SubscriptionRow({ item, isLast }: Props) {
         activeOpacity={0.7}
         onPress={() => router.push(`/subscription/${item.id}` as any)}
       >
-        {/* Brand logo placeholder */}
-        <View
-          className="rounded-xl w-[42px] h-[42px] items-center justify-center mr-4"
-          style={{ backgroundColor: item.color }}
-        >
-          <Text className="text-white text-[16px] font-bold">{item.initial}</Text>
+        {/* Brand logo (falls back to colored initial) */}
+        <View className="mr-4">
+          <BrandLogo brandKey={item.brandKey} name={item.name} color={item.color} size={42} radius={12} />
         </View>
 
         {/* Name + category */}
