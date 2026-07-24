@@ -34,6 +34,9 @@ export default function ProfileScreen() {
   const [sheet, setSheet] = useState<'notif' | 'currency' | 'firstDay' | null>(null)
   const [info, setInfo] = useState<keyof typeof INFO | null>(null)
 
+  // Real name, falling back to the email's username, then a generic label.
+  const displayName = s.full_name || s.email?.split('@')[0] || 'User'
+
   useFocusEffect(
     useCallback(() => {
       if (userId) s.fetchProfile(userId)
@@ -74,7 +77,7 @@ export default function ProfileScreen() {
         </Text>
 
         <ProfileCard
-          fullName={s.full_name}
+          fullName={displayName}
           email={s.email}
           avatarUrl={s.avatar_url}
           isPremium={s.is_premium}
