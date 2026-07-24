@@ -30,6 +30,7 @@ export default function AnalyticsScreen() {
   const rates = useRatesStore((s) => s.rates)
   const [range, setRange] = useState<Period>('monthly')
   const [filterOpen, setFilterOpen] = useState(false)
+  const rangeLabel = PERIOD_OPTIONS.find((o) => o.value === range)?.label ?? ''
 
   const total = calculateSpendByPeriod(subs, range, currency, rates)
   const monthlyTotal = calculateSpendByPeriod(subs, 'monthly', currency, rates)
@@ -43,20 +44,27 @@ export default function AnalyticsScreen() {
 
   return (
     <View className="flex-1 bg-[#F0EBFF]" style={{ paddingTop: insets.top }}>
-      {/* Header: back · title · filter */}
+      {/* Header: back · title (centered) · filter pill */}
       <View className="flex-row items-center px-6 pb-2 pt-2">
         <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center">
           <Ionicons name="chevron-back-outline" size={26} color="#1A1A2E" />
         </Pressable>
-        <Text className="flex-1 text-center text-[20px] font-bold text-[#1A1A2E]">Analytics</Text>
+        <View className="flex-1" />
         <Pressable
           onPress={() => setFilterOpen(true)}
           hitSlop={8}
-          className="h-9 w-9 items-center justify-center rounded-full bg-white"
+          className="h-9 flex-row items-center gap-x-1.5 rounded-full bg-white px-3"
           style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 2 }}
         >
-          <Ionicons name="options-outline" size={20} color="#6C47D9" />
+          <Ionicons name="options-outline" size={18} color="#6C47D9" />
+          <Text className="text-[13px] font-semibold text-[#6C47D9]">{rangeLabel}</Text>
         </Pressable>
+        <Text
+          pointerEvents="none"
+          className="absolute left-0 right-0 text-center text-[20px] font-bold text-[#1A1A2E]"
+        >
+          Analytics
+        </Text>
       </View>
 
       {subs.length === 0 ? (
