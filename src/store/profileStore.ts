@@ -11,6 +11,7 @@ interface ProfileState {
   is_premium: boolean
   loaded: boolean
   fetchProfile: (userId: string) => Promise<void>
+  setFullName: (name: string) => void
   setCurrency: (currency: string) => void
   setFirstDayOfWeek: (day: number) => void
   setNotificationDays: (days: number) => void
@@ -60,6 +61,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       loaded: true,
     })
   },
+  setFullName: (full_name) => set({ full_name }),
   setCurrency: (currency) => set({ currency }),
   setFirstDayOfWeek: (first_day_of_week) => set({ first_day_of_week }),
   setNotificationDays: (notification_days_before) => set({ notification_days_before }),

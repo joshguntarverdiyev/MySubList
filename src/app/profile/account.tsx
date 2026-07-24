@@ -8,11 +8,16 @@ import { useProfileStore } from '@/store/profileStore'
 import SettingsCard from '@/components/profile/SettingsCard'
 import SettingsRow from '@/components/profile/SettingsRow'
 import EmailChangeForm from '@/components/account/EmailChangeForm'
+import UsernameChangeForm from '@/components/account/UsernameChangeForm'
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets()
   const email = useProfileStore((s) => s.email)
+  const fullName = useProfileStore((s) => s.full_name)
   const [emailOpen, setEmailOpen] = useState(false)
+  const [usernameOpen, setUsernameOpen] = useState(false)
+
+  const displayName = fullName || email?.split('@')[0] || 'User'
 
   // Reuses the existing forgot/reset-password flow (deep-link handled in _layout).
   async function changePassword() {
@@ -31,12 +36,14 @@ export default function AccountScreen() {
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}>
         <SettingsCard title="ACCOUNT">
+          <SettingsRow icon="person-outline" label="Username" subtitle={displayName} divider onPress={() => setUsernameOpen(true)} />
           <SettingsRow icon="mail-outline" label="Email" subtitle={email} divider onPress={() => setEmailOpen(true)} />
           <SettingsRow icon="lock-closed-outline" label="Change Password" divider onPress={changePassword} />
           <SettingsRow icon="shield-checkmark-outline" label="Privacy & Security" onPress={() => router.push('/profile/privacy-security' as any)} />
         </SettingsCard>
       </ScrollView>
 
+      <UsernameChangeForm visible={usernameOpen} currentName={fullName} onClose={() => setUsernameOpen(false)} />
       <EmailChangeForm visible={emailOpen} currentEmail={email} onClose={() => setEmailOpen(false)} />
     </View>
   )
