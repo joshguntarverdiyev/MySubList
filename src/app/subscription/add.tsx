@@ -26,9 +26,9 @@ export default function AddSubscription() {
 
   if (blocked) return null
 
-  const filtered = POPULAR_SERVICES.filter((s) =>
-    s.name.toLowerCase().includes(query.trim().toLowerCase())
-  )
+  const q = query.trim().toLowerCase()
+  const filtered = POPULAR_SERVICES.filter((s) => s.name.toLowerCase().includes(q))
+  const categories = Array.from(new Set(POPULAR_SERVICES.map((s) => s.category)))
 
   const openNew = (service?: Service) => {
     if (service) {
@@ -84,29 +84,33 @@ export default function AddSubscription() {
           />
         </View>
 
-        {/* Popular services header */}
-        <View className="flex-row items-center justify-between px-6 mb-4">
-          <Text className="text-[22px] font-bold text-[#111827]">Popular services</Text>
-          <TouchableOpacity>
-            <Text className="text-[15px] font-semibold text-[#7C4DFF]">See all</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Grid */}
-        {filtered.length > 0 ? (
-          <View className="flex-row flex-wrap justify-between px-6">
-            {filtered.map((service) => (
-              <ServiceCard
-                key={service.brandKey}
-                service={service}
-                onPress={() => openNew(service)}
-              />
-            ))}
-          </View>
+        {/* Search results: flat grid. Otherwise: grouped by category. */}
+        {q ? (
+          filtered.length > 0 ? (
+            <>
+              <Text className="px-6 mb-4 text-[22px] font-bold text-[#111827]">Results</Text>
+              <View className="flex-row flex-wrap px-6 gap-x-3">
+                {filtered.map((service) => (
+                  <ServiceCard key={service.brandKey} service={service} onPress={() => openNew(service)} />
+                ))}
+              </View>
+            </>
+          ) : (
+            <View className="items-center py-10">
+              <Text className="text-[15px] text-[#9CA3AF]">No services found</Text>
+            </View>
+          )
         ) : (
-          <View className="items-center py-10">
-            <Text className="text-[15px] text-[#9CA3AF]">No services found</Text>
-          </View>
+          categories.map((cat) => (
+            <View key={cat} className="mb-2">
+              <Text className="px-6 mb-3 text-[18px] font-bold text-[#111827]">{cat}</Text>
+              <View className="flex-row flex-wrap px-6 gap-x-3 mb-2">
+                {POPULAR_SERVICES.filter((s) => s.category === cat).map((service) => (
+                  <ServiceCard key={service.brandKey} service={service} onPress={() => openNew(service)} />
+                ))}
+              </View>
+            </View>
+          ))
         )}
       </ScrollView>
 
