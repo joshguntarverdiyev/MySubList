@@ -65,7 +65,7 @@ export default function ProfileScreen() {
   return (
     <View className="flex-1 bg-[#F7F3FD]">
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 24, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 24, paddingBottom: insets.bottom + 96 }}
         showsVerticalScrollIndicator={false}
       >
         <Text className="text-[32px] font-bold tracking-[-0.8px] text-[#111827]">Profile & Settings</Text>

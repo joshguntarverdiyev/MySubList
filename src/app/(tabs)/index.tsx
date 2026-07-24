@@ -74,7 +74,7 @@ export default function HomeScreen() {
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 96 }}
       >
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 mb-6">
