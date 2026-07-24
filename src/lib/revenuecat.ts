@@ -1,4 +1,5 @@
 import { Platform } from 'react-native'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
 import Purchases, { LOG_LEVEL, type CustomerInfo } from 'react-native-purchases'
 import { useProfileStore } from '@/store/profileStore'
 import { supabase } from '@/lib/supabase'
@@ -6,6 +7,8 @@ import { supabase } from '@/lib/supabase'
 // iOS-only for now — no Android RevenueCat key is provisioned yet.
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
 const ENTITLEMENT = 'MySubList Pro'
+// RevenueCat needs native modules that Expo Go doesn't have — skip there.
+const IN_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 
 let configured = false
 
@@ -31,7 +34,7 @@ function syncPremium(info: CustomerInfo) {
  * account across devices. Safe to call repeatedly — it configures only once.
  */
 export async function configureRevenueCat(userId: string) {
-  if (configured || Platform.OS !== 'ios' || !IOS_KEY) return
+  if (configured || Platform.OS !== 'ios' || !IOS_KEY || IN_EXPO_GO) return
   configured = true
   if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.DEBUG)
   Purchases.configure({ apiKey: IOS_KEY, appUserID: userId })
