@@ -13,6 +13,16 @@ import SettingsRow from '@/components/profile/SettingsRow'
 export default function PrivacySecurityScreen() {
   const insets = useSafeAreaInsets()
 
+  // openURL rejects when no handler exists (e.g. no Mail app in the simulator);
+  // catch it and show a friendly fallback instead of an unhandled rejection.
+  async function openExternal(url: string, fallback: string) {
+    try {
+      await Linking.openURL(url)
+    } catch {
+      Alert.alert('Unable to open', fallback)
+    }
+  }
+
   async function runDelete() {
     try {
       await cancelAllRenewalReminders()
@@ -54,8 +64,8 @@ export default function PrivacySecurityScreen() {
         </SettingsCard>
 
         <SettingsCard title="YOUR RIGHTS">
-          <SettingsRow icon="download-outline" label="Privacy Policy" subtitle="Read our full privacy policy" divider onPress={() => Linking.openURL('https://mysublist.app/privacy')} />
-          <SettingsRow icon="mail-outline" label="Data Request" subtitle="Request a copy of your data" onPress={() => Linking.openURL('mailto:hello@mysublist.app?subject=Data Request')} />
+          <SettingsRow icon="download-outline" label="Privacy Policy" subtitle="Read our full privacy policy" divider onPress={() => openExternal('https://mysublist.app/privacy', 'Visit mysublist.app/privacy')} />
+          <SettingsRow icon="mail-outline" label="Data Request" subtitle="Request a copy of your data" onPress={() => openExternal('mailto:hello@mysublist.app?subject=Data Request', 'No mail app is set up. Email us at hello@mysublist.app')} />
         </SettingsCard>
 
         <SettingsCard title="DANGER ZONE">
