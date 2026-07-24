@@ -64,6 +64,7 @@
     "docker",
     "namecheap",
     "xbox-game-pass",
+    "playstation-plus",
     "nintendo-switch-online",
     "apple-arcade",
     "ea-play",
@@ -79,6 +80,7 @@
     "financial-times",
     "bloomberg",
     "medium",
+    "substack",
     "blinkist",
     "kindle-unlimited",
     "readly",
@@ -121,33 +123,6 @@
     "reddit-premium",
     "telegram-premium"
   ],
-  "lowRes": [
-    "spotify (48px)",
-    "tidal (48px)",
-    "google-one (32px)",
-    "dropbox (32px)",
-    "microsoft-365 (48px)",
-    "google-workspace (20px)",
-    "slack (34px)",
-    "zoom (32px)",
-    "asana (48px)",
-    "todoist (48px)",
-    "grammarly (48px)",
-    "calendly (48px)",
-    "adobe-acrobat (31px)",
-    "ea-play (16px)",
-    "geforce-now (48px)",
-    "bloomberg (48px)",
-    "kindle-unlimited (48px)",
-    "readly (32px)",
-    "headspace (32px)",
-    "whoop (48px)",
-    "freeletics (32px)",
-    "amazon-prime (48px)",
-    "hellofresh (32px)"
-  ],
-  "failed": [
-    "playstation-plus <playstation.com> — no PNG from any source",
-    "substack <substack.com> — no PNG from any source"
-  ]
+  "lowRes": [],
+  "failed": []
 }

@@ -9,6 +9,7 @@ import { BRANDS } from './brands.data.mjs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = join(__dirname, '..', 'assets', 'brands')
 const SIZE = 256
+const TOKEN = process.env.LOGO_DEV_TOKEN // Logo.dev publishable key (pk_...)
 
 /** Read PNG width/height from the IHDR chunk (bytes 16-24). */
 function pngDimensions(buf) {
@@ -35,22 +36,26 @@ async function tryFetch(url, retries = 2) {
   return null
 }
 
-/** Google favicon first; only reach for icon.horse to upgrade a weak/missing one. */
+/** Logo.dev (high-res full-color) first; fall back to Google favicons. */
 async function fetchBest(domain) {
+  if (TOKEN) {
+    const ld = await tryFetch(
+      `https://img.logo.dev/${encodeURIComponent(domain)}?token=${TOKEN}&size=${SIZE}&format=png&retina=true`,
+    )
+    if (ld) return ld
+  }
   const fav = await tryFetch(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=${SIZE}`)
-  if (fav && fav.px >= 64) return fav
-  const horse = await tryFetch(`https://icon.horse/icon/${encodeURIComponent(domain)}`)
-  const best = [fav, horse].filter(Boolean).sort((a, b) => b.px - a.px)[0]
-  if (!best) throw new Error('no PNG from any source')
-  return best
+  if (fav) return fav
+  throw new Error('no PNG from any source')
 }
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true })
 
-  // Clean out the old inconsistent SVGs — we're standardising on PNG.
+  // Clean out ALL existing logo files for a fresh, consistent set (no stale
+  // extensions left behind when a source changes png <-> jpg).
   for (const f of await readdir(OUT_DIR)) {
-    if (f.endsWith('.svg')) await unlink(join(OUT_DIR, f))
+    if (/\.(png|jpg|svg)$/i.test(f)) await unlink(join(OUT_DIR, f))
   }
 
   const ok = []
