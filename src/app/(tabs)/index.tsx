@@ -17,6 +17,7 @@ import { formatCurrency } from '@/utils/currency'
 import { makeConverter } from '@/utils/convert'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
+import AnalyticsPreview from '@/components/home/AnalyticsPreview'
 import SavingsModal from '@/components/home/SavingsModal'
 import UpcomingPayments from '@/components/home/UpcomingPayments'
 import SubscriptionRow from '@/components/home/SubscriptionRow'
@@ -113,6 +114,10 @@ export default function HomeScreen() {
                 opportunities={savings.trialCount + savings.switchCount}
                 onPress={() => setSavingsOpen(true)}
               />
+            </View>
+
+            <View className="mt-4">
+              <AnalyticsPreview />
             </View>
 
             <View className="mt-6">

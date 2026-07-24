@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import { Image } from 'expo-image'
+import { Ionicons } from '@expo/vector-icons'
 
 interface SpendCardProps {
   totalPaid: string
@@ -22,11 +22,7 @@ export default function SpendCard({ totalPaid, monthlySpend, activeCount, note }
         </View>
         <View className="items-end">
           <View className="bg-[#F6F1FD] rounded-xl w-[68px] h-[64px] items-center justify-center">
-            <Image
-              source={require('../../../assets/home-screen/chart.png')}
-              style={{ width: 44, height: 30 }}
-              contentFit="contain"
-            />
+            <Ionicons name="trending-up-outline" size={28} color="#7C4DFF" />
           </View>
           {note ? <Text className="text-[10px] text-[#9CA3AF] mt-1 text-right" numberOfLines={1}>{note}</Text> : null}
         </View>
