@@ -10,12 +10,18 @@ import {
   calculateSpendByPeriod, getSpendTrend, getCategoryBreakdown,
   getTopSpenders, getInsights, type Period,
 } from '@/utils/analytics'
-import FilterPills from '@/components/analytics/FilterPills'
+import OptionSheet, { type SheetOption } from '@/components/profile/OptionSheet'
 import SpendOverviewCard from '@/components/analytics/SpendOverviewCard'
 import SpendTrendChart from '@/components/analytics/SpendTrendChart'
 import CategoryDonut from '@/components/analytics/CategoryDonut'
 import TopSpenders from '@/components/analytics/TopSpenders'
 import InsightsGrid from '@/components/analytics/InsightsGrid'
+
+const PERIOD_OPTIONS: SheetOption<Period>[] = [
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Monthly', value: 'monthly' },
+  { label: 'Yearly', value: 'yearly' },
+]
 
 export default function AnalyticsScreen() {
   const insets = useSafeAreaInsets()
@@ -23,6 +29,7 @@ export default function AnalyticsScreen() {
   const currency = useProfileStore((s) => s.currency)
   const rates = useRatesStore((s) => s.rates)
   const [range, setRange] = useState<Period>('monthly')
+  const [filterOpen, setFilterOpen] = useState(false)
 
   const total = calculateSpendByPeriod(subs, range, currency, rates)
   const monthlyTotal = calculateSpendByPeriod(subs, 'monthly', currency, rates)
@@ -36,18 +43,20 @@ export default function AnalyticsScreen() {
 
   return (
     <View className="flex-1 bg-[#F0EBFF]" style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="px-6 pb-2 pt-2">
-        <View className="mb-3 flex-row items-center">
-          <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center">
-            <Ionicons name="chevron-back-outline" size={26} color="#1A1A2E" />
-          </Pressable>
-          <Text className="flex-1 text-center text-[20px] font-bold text-[#1A1A2E]">Analytics</Text>
-          <View className="w-9" />
-        </View>
-        <View className="items-end">
-          <FilterPills value={range} onChange={setRange} />
-        </View>
+      {/* Header: back · title · filter */}
+      <View className="flex-row items-center px-6 pb-2 pt-2">
+        <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center">
+          <Ionicons name="chevron-back-outline" size={26} color="#1A1A2E" />
+        </Pressable>
+        <Text className="flex-1 text-center text-[20px] font-bold text-[#1A1A2E]">Analytics</Text>
+        <Pressable
+          onPress={() => setFilterOpen(true)}
+          hitSlop={8}
+          className="h-9 w-9 items-center justify-center rounded-full bg-white"
+          style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 2 }}
+        >
+          <Ionicons name="options-outline" size={20} color="#6C47D9" />
+        </Pressable>
       </View>
 
       {subs.length === 0 ? (
@@ -66,6 +75,15 @@ export default function AnalyticsScreen() {
           <InsightsGrid insights={insights} currency={currency} />
         </ScrollView>
       )}
+
+      <OptionSheet
+        visible={filterOpen}
+        title="Time range"
+        options={PERIOD_OPTIONS}
+        selected={range}
+        onSelect={(v) => { setRange(v); setFilterOpen(false) }}
+        onClose={() => setFilterOpen(false)}
+      />
     </View>
   )
 }
