@@ -1,5 +1,6 @@
-import { TouchableOpacity, View, Text } from 'react-native'
+import { TouchableOpacity, Text } from 'react-native'
 import type { Service } from '@/constants/services'
+import BrandLogo from '@/components/subscription/BrandLogo'
 
 interface ServiceCardProps {
   service: Service
@@ -13,14 +14,8 @@ export default function ServiceCard({ service, onPress }: ServiceCardProps) {
       onPress={onPress}
       className="w-[78px] h-[92px] bg-white rounded-xl border border-[#EFE9FF] items-center justify-center mb-3"
     >
-      {/* Colored-initial logo (swap for PNG later) */}
-      <View
-        className="w-[50px] h-[50px] rounded-xl items-center justify-center mb-2"
-        style={{ backgroundColor: service.color }}
-      >
-        <Text className="text-white text-[20px] font-bold">{service.initial}</Text>
-      </View>
-      <Text className="text-[12px] text-[#111827]" numberOfLines={1}>
+      <BrandLogo brandKey={service.brandKey} name={service.name} color={service.color} size={50} />
+      <Text className="mt-2 text-[12px] text-[#111827]" numberOfLines={1}>
         {service.name}
       </Text>
     </TouchableOpacity>

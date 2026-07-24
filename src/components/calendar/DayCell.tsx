@@ -2,8 +2,8 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import { router } from 'expo-router'
 import { isSameDay, isBefore, startOfDay } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
-import { getBrandVisual } from '@/utils/brand'
 import { renewalKind, KIND_COLOR } from '@/utils/renewalDates'
+import BrandLogo from '@/components/subscription/BrandLogo'
 
 interface DayCellProps {
   date: Date
@@ -44,12 +44,9 @@ export default function DayCell({ date, dateKey, inMonth, width, subs, onShowDay
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push(`/subscription/${single.id}` as any)}
-          className="rounded-md items-center justify-center mt-0.5"
-          style={{ width: 16, height: 16, backgroundColor: getBrandVisual(single.brand_key, single.name, single.color).color }}
+          className="mt-0.5"
         >
-          <Text className="text-white text-[9px] font-bold">
-            {getBrandVisual(single.brand_key, single.name, single.color).initial}
-          </Text>
+          <BrandLogo brandKey={single.brand_key} name={single.name} color={single.color} size={16} radius={4} />
         </TouchableOpacity>
       ) : subs.length > 1 ? (
         <TouchableOpacity

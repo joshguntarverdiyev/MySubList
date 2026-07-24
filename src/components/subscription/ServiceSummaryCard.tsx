@@ -1,14 +1,14 @@
 import { View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import type { Subscription } from '@/types/subscription'
-import { getBrandVisual } from '@/utils/brand'
+import { POPULAR_SERVICES } from '@/constants/services'
 import { computeTotalPaid, formatLongDate } from '@/utils/subscriptionStats'
 import { nextRenewalIso } from '@/utils/renewalDates'
 import { formatCurrency } from '@/utils/currency'
+import BrandLogo from '@/components/subscription/BrandLogo'
 
 export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
-  const { color, initial } = getBrandVisual(sub.brand_key, sub.name, sub.color)
-  const website = sub.brand_key ? `${sub.brand_key}.com` : null
+  const website = POPULAR_SERVICES.find((s) => s.brandKey === sub.brand_key)?.domain ?? null
 
   return (
     <View
@@ -17,8 +17,8 @@ export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
     >
       {/* Top: logo + name + tags */}
       <View className="flex-row">
-        <View className="w-[64px] h-[64px] rounded-xl items-center justify-center mr-4" style={{ backgroundColor: color }}>
-          <Text className="text-white text-[26px] font-bold">{initial}</Text>
+        <View className="mr-4">
+          <BrandLogo brandKey={sub.brand_key} name={sub.name} color={sub.color} size={64} />
         </View>
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
