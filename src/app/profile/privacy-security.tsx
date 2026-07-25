@@ -50,8 +50,13 @@ export default function PrivacySecurityScreen() {
   return (
     <View className="flex-1 bg-[#F7F3FD]">
       <View style={{ paddingTop: insets.top + 8 }} className="flex-row items-center px-5 pb-2">
-        <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center rounded-full bg-white">
-          <Ionicons name="chevron-back" size={20} color="#7C4DFF" />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={8}
+          className="h-11 w-11 items-center justify-center rounded-[18px] border border-[#EFE9FF] bg-white"
+          style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 4 }}
+        >
+          <Ionicons name="arrow-back" size={22} color="#7C4DFF" />
         </Pressable>
         <Text className="ml-3 text-[20px] font-bold text-[#111827]">Privacy & Security</Text>
       </View>
