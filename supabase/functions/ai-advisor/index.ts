@@ -16,7 +16,8 @@ const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-const DAILY_LIMIT = 5;
+const DAILY_LIMIT_FREE = 5;
+const DAILY_LIMIT_PRO = 50; // effectively unlimited for real users; caps abuse/bots
 const PER_MINUTE_LIMIT = 3;
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_REPLY_LENGTH = 1000;
@@ -321,17 +322,19 @@ Deno.serve(async (req) => {
   }
 
   // 4. DAILY MESSAGE LIMIT ----------------------------------------------------
-  // Premium users get unlimited messages/day (the per-minute burst limit above
-  // still applies to everyone as cost/abuse protection). is_premium is a cache
-  // synced from RevenueCat; treat it as the entitlement source here.
+  // Free users: 5/day. Pro users: 50/day — effectively unlimited for real usage,
+  // but a hard cap against bots/abuse and runaway Gemini cost. (The per-minute
+  // burst limit above still applies to everyone.) is_premium is a cache synced
+  // from RevenueCat; treat it as the entitlement source here.
   const { data: premiumProfile } = await supabase
     .from("profiles")
     .select("is_premium")
     .eq("id", user.id)
     .maybeSingle();
   const isPremium = premiumProfile?.is_premium === true;
+  const dailyLimit = isPremium ? DAILY_LIMIT_PRO : DAILY_LIMIT_FREE;
 
-  if (!isPremium) {
+  {
     const startOfDayUtc = new Date();
     startOfDayUtc.setUTCHours(0, 0, 0, 0);
 
@@ -344,11 +347,11 @@ Deno.serve(async (req) => {
     if (countError) {
       return json({ error: "Could not check message limit" }, 500);
     }
-    if ((count ?? 0) >= DAILY_LIMIT) {
+    if ((count ?? 0) >= dailyLimit) {
       console.error(
-        `[ai-advisor] reject status=429 user=${user.id} reason="daily-limit"`,
+        `[ai-advisor] reject status=429 user=${user.id} reason="daily-limit" limit=${dailyLimit}`,
       );
-      return json({ error: "Daily message limit reached", limit: DAILY_LIMIT }, 429);
+      return json({ error: "Daily message limit reached", limit: dailyLimit }, 429);
     }
   }
 

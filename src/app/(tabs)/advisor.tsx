@@ -24,8 +24,9 @@ const WELCOME: ChatMessage = {
   created_at: new Date().toISOString(),
 }
 
-const LIMIT_MSG =
+const FREE_LIMIT_MSG =
   "You've reached your 5 message daily limit. Upgrade to Premium for unlimited AI advice."
+const PRO_LIMIT_MSG = "You've reached today's message limit. Please try again tomorrow."
 const ERROR_MSG = 'Something went wrong. Try again.'
 
 export default function AdvisorScreen() {
@@ -95,7 +96,7 @@ export default function AdvisorScreen() {
       } catch (err) {
         const isLimit = err instanceof DailyLimitError
         const content = isLimit
-          ? LIMIT_MSG
+          ? (isPremium ? PRO_LIMIT_MSG : FREE_LIMIT_MSG)
           : err instanceof ValidationError
             ? err.message
             : ERROR_MSG
