@@ -23,8 +23,13 @@ export default function InfoModal({ visible, entry, onClose }: Props) {
           </View>
           <View className="flex-row items-center justify-between px-5 py-2">
             <Text className="text-[20px] font-bold text-[#111827]">{entry?.title ?? ''}</Text>
-            <Pressable onPress={onClose} hitSlop={8} className="h-8 w-8 items-center justify-center rounded-full bg-[#F0EBFF]">
-              <Ionicons name="close-outline" size={20} color="#7C4DFF" />
+            <Pressable
+              onPress={onClose}
+              hitSlop={8}
+              className="h-11 w-11 items-center justify-center rounded-[18px] border border-[#EFE9FF] bg-white"
+              style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 4 }}
+            >
+              <Ionicons name="close" size={22} color="#7C4DFF" />
             </Pressable>
           </View>
 

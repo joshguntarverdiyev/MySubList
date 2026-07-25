@@ -48,8 +48,13 @@ export default function SavingsModal({ visible, onClose, subscriptions, currency
               <Text className="text-[22px] font-bold text-[#7C4DFF]">Potential Savings</Text>
               <Text className="mt-1 text-sm text-[#6B7280]">Here's how you can save money</Text>
             </View>
-            <TouchableOpacity onPress={onClose} className="h-9 w-9 items-center justify-center rounded-full bg-[#EDE9F8]" activeOpacity={0.8}>
-              <Ionicons name="close" size={20} color="#1A1A2E" />
+            <TouchableOpacity
+              onPress={onClose}
+              activeOpacity={0.85}
+              className="h-11 w-11 items-center justify-center rounded-[18px] border border-[#EFE9FF] bg-white"
+              style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 4 }}
+            >
+              <Ionicons name="close" size={22} color="#7C4DFF" />
             </TouchableOpacity>
           </View>
 
