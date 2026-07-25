@@ -22,8 +22,8 @@ export default function ServiceSummaryCard({ sub }: { sub: Subscription }) {
         </View>
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
-            <Text className="text-[22px] font-bold text-[#111827]" numberOfLines={1}>{sub.name}</Text>
-            <View className={`flex-row items-center rounded-full px-2 py-1 ${sub.is_active ? 'bg-[#E2F8E4]' : 'bg-[#F3F4F6]'}`}>
+            <Text className="flex-1 pr-2 text-[22px] font-bold text-[#111827]" numberOfLines={1}>{sub.name}</Text>
+            <View className={`shrink-0 flex-row items-center rounded-full px-2 py-1 ${sub.is_active ? 'bg-[#E2F8E4]' : 'bg-[#F3F4F6]'}`}>
               <View className={`w-1.5 h-1.5 rounded-full mr-1 ${sub.is_active ? 'bg-[#08A70E]' : 'bg-[#9CA3AF]'}`} />
               <Text className={`text-[12px] font-medium ${sub.is_active ? 'text-[#08A70E]' : 'text-[#6B7280]'}`}>
                 {sub.is_active ? 'Active' : 'Inactive'}
