@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, Link } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import ForgotPasswordSheet from '@/components/auth/ForgotPasswordSheet'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -29,6 +30,7 @@ export default function SignInScreen() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false)
 
   function validate(): boolean {
     const errors: FieldErrors = {}
@@ -63,7 +65,7 @@ export default function SignInScreen() {
   }
 
   function handleForgotPassword() {
-    router.push('/(auth)/forgot-password')
+    setForgotOpen(true)
   }
 
   return (
@@ -200,6 +202,8 @@ export default function SignInScreen() {
           </View>
         </View>
       </View>
+
+      <ForgotPasswordSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} />
     </KeyboardAvoidingView>
   )
 }
