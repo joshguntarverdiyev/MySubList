@@ -51,7 +51,7 @@ export default function PrivacySecurityScreen() {
     <View className="flex-1 bg-[#F7F3FD]">
       <View style={{ paddingTop: insets.top + 8 }} className="flex-row items-center px-5 pb-2">
         <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center rounded-full bg-white">
-          <Ionicons name="chevron-back" size={20} color="#1A1A2E" />
+          <Ionicons name="chevron-back" size={20} color="#7C4DFF" />
         </Pressable>
         <Text className="ml-3 text-[20px] font-bold text-[#111827]">Privacy & Security</Text>
       </View>

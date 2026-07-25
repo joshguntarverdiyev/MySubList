@@ -29,7 +29,7 @@ export default function SpendOverviewCard({ total, currency, period, changePct }
         <View className="flex-1">
           <Text className="text-[13px] text-[#6B7280]">Total Spend</Text>
           <Text className="mt-1 text-[32px] font-bold text-[#1A1A2E]">{formatCurrency(total, currency)}</Text>
-          <Text className="mt-0.5 text-[13px] text-[#6B7280]">in the last {PERIOD_WORD[period]}</Text>
+          <Text className="mt-0.5 text-[13px] text-[#6B7280]">so far this {PERIOD_WORD[period]}</Text>
         </View>
         {changePct !== null ? (
           <View className="flex-row items-center gap-x-1 rounded-full px-2 py-1" style={{ backgroundColor: `${color}1A` }}>

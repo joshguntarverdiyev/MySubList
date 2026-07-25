@@ -1,6 +1,6 @@
 import {
-  addMonths, addWeeks, addYears, endOfDay, endOfMonth, format,
-  isAfter, isBefore, parseISO, startOfDay, startOfMonth, subDays, subMonths,
+  addMonths, addWeeks, addYears, endOfDay, endOfMonth, format, isAfter, isBefore,
+  parseISO, startOfDay, startOfMonth, startOfWeek, startOfYear, subDays, subMonths, subWeeks, subYears,
 } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
 import { POPULAR_SERVICES } from '@/constants/services'
@@ -23,7 +23,7 @@ const STEP_CAP = 2400
 
 const active = (subs: Subscription[]) => subs.filter((s) => s.is_active)
 
-/** A sub's cost normalized to a monthly figure in the target currency. once → 0. */
+/** A sub's cost normalized to a monthly figure (for projections/ranking). once → 0. */
 function monthlyEquivalent(sub: Subscription, conv: Converter): number {
   if (sub.billing_period === 'once') return 0
   const price = conv(sub.price, sub.currency)
@@ -32,7 +32,6 @@ function monthlyEquivalent(sub: Subscription, conv: Converter): number {
   return price
 }
 
-/** Category from the brand catalog (by brand_key), else the stored value, else Other. */
 function categoryOf(sub: Subscription): string {
   return POPULAR_SERVICES.find((s) => s.brandKey === sub.brand_key)?.category ?? sub.category ?? 'Other'
 }
@@ -51,46 +50,70 @@ function occurrencesInRange(sub: Subscription, start: Date, end: Date): number {
   return count
 }
 
+/** Start of the current period (weeks start Monday). */
+function periodStart(period: Period, ref: Date): Date {
+  if (period === 'weekly') return startOfWeek(ref, { weekStartsOn: 1 })
+  if (period === 'yearly') return startOfYear(ref)
+  return startOfMonth(ref)
+}
+
+/** Money actually charged in [start, end], converted to the target currency. */
+function spendInRange(subs: Subscription[], start: Date, end: Date, conv: Converter): number {
+  return active(subs).reduce((sum, s) => sum + occurrencesInRange(s, start, end) * conv(s.price, s.currency), 0)
+}
+
 const totalMonthly = (subs: Subscription[], conv: Converter) =>
   active(subs).reduce((sum, s) => sum + monthlyEquivalent(s, conv), 0)
 
+/** Actual spend from the start of the current period up to (and including) today. */
 export function calculateSpendByPeriod(subs: Subscription[], period: Period, targetCurrency: string, rates: Rates): number {
-  const monthly = totalMonthly(subs, makeConverter(rates, targetCurrency))
-  if (period === 'weekly') return (monthly * 12) / 52
-  if (period === 'yearly') return monthly * 12
-  return monthly
+  const now = new Date()
+  return spendInRange(subs, periodStart(period, now), endOfDay(now), makeConverter(rates, targetCurrency))
 }
 
-/** Buckets for the trend: 7 days / last 6 months / last 12 months. */
+/** % change vs the same to-date window one period earlier (null if no prior spend). */
+export function getSpendChange(subs: Subscription[], period: Period, targetCurrency: string, rates: Rates): number | null {
+  const conv = makeConverter(rates, targetCurrency)
+  const now = new Date()
+  const start = periodStart(period, now)
+  const cur = spendInRange(subs, start, endOfDay(now), conv)
+  const shift = period === 'weekly' ? subWeeks : period === 'yearly' ? subYears : subMonths
+  const prev = spendInRange(subs, shift(start, 1), endOfDay(shift(now, 1)), conv)
+  return prev > 0 ? ((cur - prev) / prev) * 100 : null
+}
+
+/** Trend buckets: 7 days / last 6 months / last 12 months, each capped at today. */
 function buckets(period: Period): { label: string; start: Date; end: Date }[] {
   const now = new Date()
+  const cap = endOfDay(now)
+  const clamp = (d: Date) => (isAfter(d, cap) ? cap : d)
   if (period === 'weekly') {
     return Array.from({ length: 7 }, (_, i) => {
       const d = subDays(now, 6 - i)
-      return { label: format(d, 'EEE'), start: startOfDay(d), end: endOfDay(d) }
+      return { label: format(d, 'EEE'), start: startOfDay(d), end: clamp(endOfDay(d)) }
     })
   }
   const n = period === 'yearly' ? 12 : 6
   return Array.from({ length: n }, (_, i) => {
     const d = subMonths(now, n - 1 - i)
-    return { label: format(d, 'MMM'), start: startOfMonth(d), end: endOfMonth(d) }
+    return { label: format(d, 'MMM'), start: startOfMonth(d), end: clamp(endOfMonth(d)) }
   })
 }
 
 export function getSpendTrend(subs: Subscription[], period: Period, targetCurrency: string, rates: Rates): TrendPoint[] {
   const conv = makeConverter(rates, targetCurrency)
-  const list = active(subs)
-  return buckets(period).map(({ label, start, end }) => ({
-    label,
-    value: list.reduce((sum, s) => sum + occurrencesInRange(s, start, end) * conv(s.price, s.currency), 0),
-  }))
+  return buckets(period).map(({ label, start, end }) => ({ label, value: spendInRange(subs, start, end, conv) }))
 }
 
-export function getCategoryBreakdown(subs: Subscription[], targetCurrency: string, rates: Rates): CategorySlice[] {
+/** Category split of ACTUAL spend over the selected period, to date. */
+export function getCategoryBreakdown(subs: Subscription[], period: Period, targetCurrency: string, rates: Rates): CategorySlice[] {
   const conv = makeConverter(rates, targetCurrency)
+  const now = new Date()
+  const start = periodStart(period, now)
+  const end = endOfDay(now)
   const totals = new Map<string, number>()
   for (const s of active(subs)) {
-    const amt = monthlyEquivalent(s, conv)
+    const amt = occurrencesInRange(s, start, end) * conv(s.price, s.currency)
     if (amt <= 0) continue
     totals.set(categoryOf(s), (totals.get(categoryOf(s)) ?? 0) + amt)
   }
@@ -108,9 +131,9 @@ export function getTopSpenders(subs: Subscription[], targetCurrency: string, rat
     .slice(0, limit)
 }
 
-export function getInsights(subs: Subscription[], targetCurrency: string, rates: Rates): Insights {
+export function getInsights(subs: Subscription[], period: Period, targetCurrency: string, rates: Rates): Insights {
   const conv = makeConverter(rates, targetCurrency)
-  const breakdown = getCategoryBreakdown(subs, targetCurrency, rates)
+  const breakdown = getCategoryBreakdown(subs, period, targetCurrency, rates)
   const trend = getSpendTrend(subs, 'yearly', targetCurrency, rates)
   const cheapest = trend.length ? trend.reduce((min, p) => (p.value < min.value ? p : min)) : null
   return {
@@ -121,7 +144,6 @@ export function getInsights(subs: Subscription[], targetCurrency: string, rates:
   }
 }
 
-/** Monthly-equivalent cost of one sub, for display in Top Spenders. */
 export function monthlyCost(sub: Subscription, targetCurrency: string, rates: Rates): number {
   return monthlyEquivalent(sub, makeConverter(rates, targetCurrency))
 }

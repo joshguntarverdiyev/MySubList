@@ -7,7 +7,7 @@ import { useSubscriptionStore } from '@/store/subscriptionStore'
 import { useProfileStore } from '@/store/profileStore'
 import { useRatesStore } from '@/store/ratesStore'
 import {
-  calculateSpendByPeriod, getSpendTrend, getCategoryBreakdown,
+  calculateSpendByPeriod, getSpendChange, getSpendTrend, getCategoryBreakdown,
   getTopSpenders, getInsights, type Period,
 } from '@/utils/analytics'
 import OptionSheet, { type SheetOption } from '@/components/profile/OptionSheet'
@@ -33,21 +33,18 @@ export default function AnalyticsScreen() {
   const rangeLabel = PERIOD_OPTIONS.find((o) => o.value === range)?.label ?? ''
 
   const total = calculateSpendByPeriod(subs, range, currency, rates)
-  const monthlyTotal = calculateSpendByPeriod(subs, 'monthly', currency, rates)
+  const changePct = getSpendChange(subs, range, currency, rates)
   const trend = getSpendTrend(subs, range, currency, rates)
-  const prev = trend[trend.length - 2]?.value ?? 0
-  const cur = trend[trend.length - 1]?.value ?? 0
-  const changePct = prev > 0 ? ((cur - prev) / prev) * 100 : null
-  const breakdown = getCategoryBreakdown(subs, currency, rates)
+  const breakdown = getCategoryBreakdown(subs, range, currency, rates)
   const top = getTopSpenders(subs, currency, rates, 3)
-  const insights = getInsights(subs, currency, rates)
+  const insights = getInsights(subs, range, currency, rates)
 
   return (
     <View className="flex-1 bg-[#F0EBFF]" style={{ paddingTop: insets.top }}>
       {/* Header: back · title (centered) · filter pill */}
       <View className="flex-row items-center px-6 pb-2 pt-2">
-        <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center">
-          <Ionicons name="chevron-back-outline" size={26} color="#1A1A2E" />
+        <Pressable onPress={() => router.back()} hitSlop={8} className="h-9 w-9 items-center justify-center rounded-full bg-white">
+          <Ionicons name="chevron-back" size={20} color="#7C4DFF" />
         </Pressable>
         <View className="flex-1" />
         <Pressable
@@ -77,8 +74,8 @@ export default function AnalyticsScreen() {
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 24 }}>
           <SpendOverviewCard total={total} currency={currency} period={range} changePct={changePct} />
-          <SpendTrendChart data={trend} />
-          <CategoryDonut data={breakdown} total={monthlyTotal} currency={currency} />
+          <SpendTrendChart data={trend} currency={currency} />
+          <CategoryDonut data={breakdown} total={total} currency={currency} />
           <TopSpenders subs={top} currency={currency} rates={rates} />
           <InsightsGrid insights={insights} currency={currency} />
         </ScrollView>
