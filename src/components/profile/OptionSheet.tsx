@@ -1,4 +1,4 @@
-import { Modal, View, Text, Pressable } from 'react-native'
+import { Modal, View, Text, Pressable, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -45,34 +45,36 @@ export default function OptionSheet<T extends string | number>({
             {title}
           </Text>
 
-          {options.map((opt) => {
-            const active = opt.value === selected
-            return (
-              <Pressable
-                key={String(opt.value)}
-                onPress={() => onSelect(opt.value)}
-                className="flex-row items-center justify-between rounded-2xl px-4 py-4"
-                style={({ pressed }) => ({
-                  backgroundColor: active ? '#F0EBFF' : pressed ? '#F7F3FD' : 'transparent',
-                })}
-              >
-                <Text
-                  className="text-[16px]"
-                  style={{
-                    color: active ? '#7C4DFF' : '#1A1A2E',
-                    fontWeight: active ? '600' : '400',
-                  }}
+          <ScrollView style={{ maxHeight: 360 }} showsVerticalScrollIndicator={false}>
+            {options.map((opt) => {
+              const active = opt.value === selected
+              return (
+                <Pressable
+                  key={String(opt.value)}
+                  onPress={() => onSelect(opt.value)}
+                  className="flex-row items-center justify-between rounded-2xl px-4 py-4"
+                  style={({ pressed }) => ({
+                    backgroundColor: active ? '#F0EBFF' : pressed ? '#F7F3FD' : 'transparent',
+                  })}
                 >
-                  {opt.label}
-                </Text>
-                {active ? (
-                  <Ionicons name="checkmark" size={20} color="#7C4DFF" />
-                ) : lockedValues?.includes(opt.value) ? (
-                  <Ionicons name="lock-closed" size={16} color="#9CA3AF" />
-                ) : null}
-              </Pressable>
-            )
-          })}
+                  <Text
+                    className="text-[16px]"
+                    style={{
+                      color: active ? '#7C4DFF' : '#1A1A2E',
+                      fontWeight: active ? '600' : '400',
+                    }}
+                  >
+                    {opt.label}
+                  </Text>
+                  {active ? (
+                    <Ionicons name="checkmark" size={20} color="#7C4DFF" />
+                  ) : lockedValues?.includes(opt.value) ? (
+                    <Ionicons name="lock-closed" size={16} color="#9CA3AF" />
+                  ) : null}
+                </Pressable>
+              )
+            })}
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>

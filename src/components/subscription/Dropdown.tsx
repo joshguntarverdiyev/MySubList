@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native'
+import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
 interface DropdownProps {
@@ -35,24 +35,26 @@ export default function Dropdown({ label, value, placeholder, options, onSelect,
           className="flex-1 bg-black/30 justify-center px-8"
         >
           <View className="bg-white rounded-2xl overflow-hidden">
-            {options.map((opt, i) => (
-              <TouchableOpacity
-                key={opt}
-                activeOpacity={0.7}
-                onPress={() => {
-                  onSelect(opt)
-                  setOpen(false)
-                }}
-                className={`flex-row items-center justify-between px-5 py-4 ${i > 0 ? 'border-t border-[#F0EBFF]' : ''}`}
-              >
-                <Text className={opt === value ? 'text-[16px] font-semibold text-[#7C4DFF]' : 'text-[16px] text-[#111827]'}>
-                  {opt}
-                </Text>
-                {lockedValues?.includes(opt) ? (
-                  <Ionicons name="lock-closed" size={15} color="#9CA3AF" />
-                ) : null}
-              </TouchableOpacity>
-            ))}
+            <ScrollView style={{ maxHeight: 320 }} showsVerticalScrollIndicator={false}>
+              {options.map((opt, i) => (
+                <TouchableOpacity
+                  key={opt}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    onSelect(opt)
+                    setOpen(false)
+                  }}
+                  className={`flex-row items-center justify-between px-5 py-4 ${i > 0 ? 'border-t border-[#F0EBFF]' : ''}`}
+                >
+                  <Text className={opt === value ? 'text-[16px] font-semibold text-[#7C4DFF]' : 'text-[16px] text-[#111827]'}>
+                    {opt}
+                  </Text>
+                  {lockedValues?.includes(opt) ? (
+                    <Ionicons name="lock-closed" size={15} color="#9CA3AF" />
+                  ) : null}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </Pressable>
       </Modal>

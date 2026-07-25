@@ -1,4 +1,5 @@
 import type { SheetOption } from '@/components/profile/OptionSheet'
+import { CURRENCIES_LIST } from '@/constants/currencies'
 
 export const NOTIFICATION_OPTIONS: SheetOption<number>[] = [
   { label: '1 day before', value: 1 },
@@ -7,12 +8,10 @@ export const NOTIFICATION_OPTIONS: SheetOption<number>[] = [
   { label: '1 week before', value: 7 },
 ]
 
-export const CURRENCY_OPTIONS: SheetOption<string>[] = [
-  { label: 'EUR €', value: 'EUR' },
-  { label: 'USD $', value: 'USD' },
-  { label: 'GBP £', value: 'GBP' },
-  { label: 'TRY ₺', value: 'TRY' },
-]
+export const CURRENCY_OPTIONS: SheetOption<string>[] = CURRENCIES_LIST.map((c) => ({
+  label: `${c.code} ${c.symbol}`,
+  value: c.code,
+}))
 
 export const FIRST_DAY_OPTIONS: SheetOption<number>[] = [
   { label: 'Monday', value: 1 },

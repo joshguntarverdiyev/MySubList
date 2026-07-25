@@ -1,4 +1,6 @@
-export const CURRENCIES = ['EUR', 'USD', 'GBP', 'TRY', 'CAD', 'AUD', 'JPY'] as const
+import { CURRENCIES_LIST } from '@/constants/currencies'
+
+export const CURRENCIES: string[] = CURRENCIES_LIST.map((c) => c.code)
 
 /** Currencies available on the free tier; the rest are Pro (multi-currency). */
 export const FREE_CURRENCIES = ['EUR', 'USD']
