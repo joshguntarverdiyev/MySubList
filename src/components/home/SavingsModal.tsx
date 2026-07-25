@@ -1,66 +1,80 @@
 import { Modal, View, Text, ScrollView, TouchableOpacity, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { differenceInCalendarDays, parseISO } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
 import { getTrialsEndingSoon } from '@/services/subscriptions'
 import { formatCurrency } from '@/utils/currency'
+import { makeConverter } from '@/utils/convert'
 
 interface SavingsModalProps {
   visible: boolean
   onClose: () => void
   subscriptions: Subscription[]
   currency: string
+  rates: Record<string, number>
 }
 
 const TIPS = [
   "Review subscriptions you haven't used this month",
   'Share family plans to split costs',
   'Set renewal reminders to cancel before charges hit',
-  'Annual plans are often 20–30% cheaper',
 ]
 
-export default function SavingsModal({ visible, onClose, subscriptions, currency }: SavingsModalProps) {
+const SAVINGS_PROMPT = 'How can I save money on my subscriptions? Suggest cheaper alternatives where it makes sense.'
+
+export default function SavingsModal({ visible, onClose, subscriptions, currency, rates }: SavingsModalProps) {
   const { height } = useWindowDimensions()
+  const convert = makeConverter(rates, currency)
   const trials = getTrialsEndingSoon(subscriptions)
   const monthly = subscriptions.filter((s) => s.billing_period === 'monthly')
+  const topMonthly = [...monthly]
+    .sort((a, b) => convert(b.price, b.currency) - convert(a.price, a.currency))
+    .slice(0, 3)
+
+  const askAdvisor = () => {
+    onClose()
+    router.push({ pathname: '/(tabs)/advisor', params: { ask: SAVINGS_PROMPT } } as any)
+  }
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-black/40 justify-end">
-        {/* Dismiss layer behind the sheet — keeps scroll gestures out of a Pressable */}
+      <View className="flex-1 justify-end bg-black/40">
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View className="bg-white rounded-t-[24px] p-6">
+        <View className="rounded-t-[24px] bg-white p-6">
           {/* Header */}
-          <View className="flex-row items-start justify-between mb-5">
+          <View className="mb-5 flex-row items-start justify-between">
             <View className="flex-1 pr-3">
               <Text className="text-[22px] font-bold text-[#7C4DFF]">Potential Savings</Text>
-              <Text className="text-sm text-[#6B7280] mt-1">Here's how you can save money</Text>
+              <Text className="mt-1 text-sm text-[#6B7280]">Here's how you can save money</Text>
             </View>
-            <TouchableOpacity
-              onPress={onClose}
-              className="w-9 h-9 rounded-full bg-[#EDE9F8] items-center justify-center"
-              activeOpacity={0.8}
-            >
+            <TouchableOpacity onPress={onClose} className="h-9 w-9 items-center justify-center rounded-full bg-[#EDE9F8]" activeOpacity={0.8}>
               <Ionicons name="close" size={20} color="#1A1A2E" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            style={{ maxHeight: height * 0.7 }}
-            showsVerticalScrollIndicator
-            contentContainerStyle={{ paddingBottom: 24 }}
-          >
-            {/* Section A — Free Trials Ending Soon */}
+          <ScrollView style={{ maxHeight: height * 0.7 }} showsVerticalScrollIndicator contentContainerStyle={{ paddingBottom: 24 }}>
+            {/* Personalized AI tips CTA */}
+            <TouchableOpacity onPress={askAdvisor} activeOpacity={0.9} className="mb-6 flex-row items-center rounded-2xl bg-[#7C4DFF] px-4 py-3.5">
+              <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+              <View className="ml-3 flex-1">
+                <Text className="text-[15px] font-bold text-white">Get personalized savings tips</Text>
+                <Text className="text-[12px] text-white/80">Ask the AI advisor for cheaper alternatives</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            {/* Free Trials Ending Soon */}
             {trials.length > 0 && (
               <View className="mb-6">
-                <Text className="text-[17px] font-bold text-[#1A1A2E] mb-3">Free Trials Ending Soon</Text>
+                <Text className="mb-3 text-[17px] font-bold text-[#1A1A2E]">Free Trials Ending Soon</Text>
                 {trials.map((s) => {
                   const days = differenceInCalendarDays(parseISO(s.trial_end_date!), new Date())
                   return (
-                    <View key={s.id} className="bg-[#FFF7EB] border border-[#F59E0B]/30 rounded-2xl p-4 mb-3">
-                      <View className="flex-row items-center justify-between mb-1">
+                    <View key={s.id} className="mb-3 rounded-2xl border border-[#F59E0B]/30 bg-[#FFF7EB] p-4">
+                      <View className="mb-1 flex-row items-center justify-between">
                         <Text className="text-[15px] font-semibold text-[#1A1A2E]">{s.name}</Text>
-                        <View className="bg-[#F59E0B] rounded-full px-3 py-1">
+                        <View className="rounded-full bg-[#F59E0B] px-3 py-1">
                           <Text className="text-xs font-semibold text-white">
                             {days === 0 ? 'Ends today' : `${days} day${days === 1 ? '' : 's'} left`}
                           </Text>
@@ -75,26 +89,29 @@ export default function SavingsModal({ visible, onClose, subscriptions, currency
               </View>
             )}
 
-            {/* Section B — Switch to Yearly */}
+            {/* Switch to Yearly — top 3 priciest monthly */}
             {monthly.length > 0 && (
               <View className="mb-6">
-                <Text className="text-[17px] font-bold text-[#1A1A2E] mb-3">Switch to Yearly</Text>
-                {monthly.map((s) => (
-                  <View key={s.id} className="bg-[#F0EBFF] border border-[#E6D9FF] rounded-2xl p-4 mb-3">
-                    <Text className="text-[15px] font-semibold text-[#1A1A2E] mb-1">{s.name}</Text>
+                <Text className="mb-2 text-[17px] font-bold text-[#1A1A2E]">Switch to Yearly</Text>
+                <Text className="mb-3 text-[13px] text-[#6B7280]">
+                  You have {monthly.length} monthly {monthly.length === 1 ? 'subscription' : 'subscriptions'}. Annual plans are often 15–30% cheaper — start with your priciest:
+                </Text>
+                {topMonthly.map((s) => (
+                  <View key={s.id} className="mb-3 rounded-2xl border border-[#E6D9FF] bg-[#F0EBFF] p-4">
+                    <Text className="mb-1 text-[15px] font-semibold text-[#1A1A2E]">{s.name}</Text>
                     <Text className="text-[13px] text-[#6B7280]">
-                      Paying {s.name} monthly costs {formatCurrency(s.price * 12, currency)}/year. Check if a yearly plan is cheaper.
+                      About {formatCurrency(convert(s.price, s.currency) * 12, currency)}/year at the monthly rate — check for a cheaper annual plan.
                     </Text>
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Section C — General Tips */}
+            {/* General Tips */}
             <View className="mb-2">
-              <Text className="text-[17px] font-bold text-[#1A1A2E] mb-3">General Tips</Text>
+              <Text className="mb-3 text-[17px] font-bold text-[#1A1A2E]">General Tips</Text>
               {TIPS.map((tip) => (
-                <View key={tip} className="flex-row items-center mb-3">
+                <View key={tip} className="mb-3 flex-row items-center">
                   <Ionicons name="checkmark-circle" size={20} color="#10B981" style={{ marginRight: 8 }} />
                   <Text className="flex-1 text-[14px] text-[#1A1A2E]">{tip}</Text>
                 </View>

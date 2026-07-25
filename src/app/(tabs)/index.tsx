@@ -160,6 +160,7 @@ export default function HomeScreen() {
         onClose={() => setSavingsOpen(false)}
         subscriptions={subscriptions}
         currency={currency}
+        rates={rates}
       />
     </View>
   )

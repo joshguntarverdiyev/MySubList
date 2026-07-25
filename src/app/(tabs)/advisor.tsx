@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useUserId } from '@/hooks/useUserId'
 import { useProfileStore } from '@/store/profileStore'
 import {
@@ -111,12 +111,18 @@ export default function AdvisorScreen() {
     [typing, scrollToEnd, appendAssistant, isPremium],
   )
 
+  // Auto-ask when opened via the Savings modal's "personalized tips" CTA.
+  const { ask } = useLocalSearchParams<{ ask?: string }>()
+  const autoAsked = useRef(false)
+  useEffect(() => {
+    if (ask && !autoAsked.current) {
+      autoAsked.current = true
+      send(String(ask))
+    }
+  }, [ask, send])
+
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-[#FAFAFD]"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <KeyboardAvoidingView className="flex-1 bg-[#FAFAFD]" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
       <View style={{ paddingTop: insets.top }} className="flex-1">
         <AdvisorHeader onClose={() => router.back()} />
         <View className="h-px bg-[#EFE9FF]" />
@@ -135,12 +141,7 @@ export default function AdvisorScreen() {
         </ScrollView>
 
         <QuickActionChips onSelect={send} disabled={typing} />
-        <ChatInput
-          value={input}
-          onChangeText={setInput}
-          onSend={() => send(input)}
-          disabled={typing}
-        />
+        <ChatInput value={input} onChangeText={setInput} onSend={() => send(input)} disabled={typing} />
         <View style={{ height: insets.bottom }} />
       </View>
     </KeyboardAvoidingView>
