@@ -46,7 +46,7 @@ export default function DayCell({ date, dateKey, inMonth, width, subs, onShowDay
           onPress={() => router.push(`/subscription/${single.id}` as any)}
           className="mt-0.5"
         >
-          <BrandLogo brandKey={single.brand_key} name={single.name} color={single.color} size={16} radius={4} />
+          <BrandLogo brandKey={single.brand_key} name={single.name} color={single.color} size={20} radius={5} />
         </TouchableOpacity>
       ) : subs.length > 1 ? (
         <TouchableOpacity
