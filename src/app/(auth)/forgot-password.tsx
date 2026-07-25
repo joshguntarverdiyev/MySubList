@@ -54,8 +54,12 @@ export default function ForgotPasswordScreen() {
         }}
       >
         {/* Back arrow */}
-        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center">
-          <Ionicons name="arrow-back" size={26} color="#1A1A2E" />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="h-11 w-11 items-center justify-center rounded-[18px] border border-[#EFE9FF] bg-white"
+          style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 4 }}
+        >
+          <Ionicons name="arrow-back" size={22} color="#7C4DFF" />
         </TouchableOpacity>
 
         {sent ? (
