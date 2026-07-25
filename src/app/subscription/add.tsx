@@ -63,7 +63,7 @@ export default function AddSubscription() {
             className="w-11 h-11 rounded-[18px] bg-white border border-[#EFE9FF] items-center justify-center mt-1"
             style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 4 }}
           >
-            <Ionicons name="close" size={22} color="#6B7280" />
+            <Ionicons name="close" size={22} color="#7C4DFF" />
           </TouchableOpacity>
         </View>
 
