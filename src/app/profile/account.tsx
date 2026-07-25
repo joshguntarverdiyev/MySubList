@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { supabase } from '@/lib/supabase'
 import { useProfileStore } from '@/store/profileStore'
 import SettingsCard from '@/components/profile/SettingsCard'
 import SettingsRow from '@/components/profile/SettingsRow'
 import EmailChangeForm from '@/components/account/EmailChangeForm'
 import UsernameChangeForm from '@/components/account/UsernameChangeForm'
+import PasswordResetSheet from '@/components/auth/PasswordResetSheet'
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets()
@@ -16,14 +16,9 @@ export default function AccountScreen() {
   const fullName = useProfileStore((s) => s.full_name)
   const [emailOpen, setEmailOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
 
   const displayName = fullName || email?.split('@')[0] || 'User'
-
-  // Reuses the existing forgot/reset-password flow (deep-link handled in _layout).
-  async function changePassword() {
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: 'mysublist://reset-password' })
-    Alert.alert('Check your inbox', `Password reset link sent to ${email}. Check your inbox to set a new password.`)
-  }
 
   return (
     <View className="flex-1 bg-[#F7F3FD]">
@@ -43,13 +38,14 @@ export default function AccountScreen() {
         <SettingsCard title="ACCOUNT">
           <SettingsRow icon="person-outline" label="Username" subtitle={displayName} divider onPress={() => setUsernameOpen(true)} />
           <SettingsRow icon="mail-outline" label="Email" subtitle={email} divider onPress={() => setEmailOpen(true)} />
-          <SettingsRow icon="lock-closed-outline" label="Change Password" divider onPress={changePassword} />
+          <SettingsRow icon="lock-closed-outline" label="Change Password" divider onPress={() => setPasswordOpen(true)} />
           <SettingsRow icon="shield-checkmark-outline" label="Privacy & Security" onPress={() => router.push('/profile/privacy-security' as any)} />
         </SettingsCard>
       </ScrollView>
 
       <UsernameChangeForm visible={usernameOpen} currentName={fullName} onClose={() => setUsernameOpen(false)} />
       <EmailChangeForm visible={emailOpen} currentEmail={email} onClose={() => setEmailOpen(false)} />
+      <PasswordResetSheet visible={passwordOpen} onClose={() => setPasswordOpen(false)} title="Change Password" email={email} />
     </View>
   )
 }

@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { router, Link } from 'expo-router'
 import { supabase } from '@/lib/supabase'
-import ForgotPasswordSheet from '@/components/auth/ForgotPasswordSheet'
+import PasswordResetSheet from '@/components/auth/PasswordResetSheet'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -203,7 +203,7 @@ export default function SignInScreen() {
         </View>
       </View>
 
-      <ForgotPasswordSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} />
+      <PasswordResetSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} title="Forgot Password" />
     </KeyboardAvoidingView>
   )
 }
