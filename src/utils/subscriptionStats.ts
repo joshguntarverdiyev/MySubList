@@ -1,27 +1,14 @@
-import {
-  differenceInWeeks, differenceInMonths,
-  differenceInYears, format, parseISO,
-} from 'date-fns'
+import { endOfDay, format, parseISO } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
+import { occurrencesInRange } from '@/utils/charges'
 
 /**
- * Actual amount paid so far = number of complete billing periods elapsed
- * since the start date × price (minimum one period). One-time = price.
- * Single source of truth for both Home and Subscription Details.
+ * Actual amount paid so far = every charge from the start date up to today ×
+ * price (the first charge on the start date included). Uses the shared
+ * occurrence counter so Home, Subscription Details, and Analytics agree.
  */
 export function computeTotalPaid(sub: Subscription): number {
-  const start = parseISO(sub.start_date)
-  const now = new Date()
-  switch (sub.billing_period) {
-    case 'weekly':
-      return Math.max(1, differenceInWeeks(now, start)) * sub.price
-    case 'monthly':
-      return Math.max(1, differenceInMonths(now, start)) * sub.price
-    case 'yearly':
-      return Math.max(1, differenceInYears(now, start)) * sub.price
-    case 'once':
-      return sub.price
-  }
+  return occurrencesInRange(sub, new Date(0), endOfDay(new Date())) * sub.price
 }
 
 /** Format an ISO date string as "Jun 24, 2025". */

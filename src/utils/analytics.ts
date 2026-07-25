@@ -1,10 +1,11 @@
 import {
-  addMonths, addWeeks, addYears, endOfDay, endOfMonth, format, isAfter, isBefore,
-  parseISO, startOfDay, startOfMonth, startOfWeek, startOfYear, subDays, subMonths, subWeeks, subYears,
+  endOfDay, endOfMonth, format, isAfter, startOfDay, startOfMonth,
+  startOfWeek, startOfYear, subDays, subMonths, subWeeks, subYears,
 } from 'date-fns'
 import type { Subscription } from '@/types/subscription'
 import { POPULAR_SERVICES } from '@/constants/services'
 import { makeConverter, type Converter } from '@/utils/convert'
+import { occurrencesInRange } from '@/utils/charges'
 import { categoryColor } from '@/constants/analyticsColors'
 
 export type Rates = Record<string, number>
@@ -19,7 +20,6 @@ export interface Insights {
 }
 
 const WEEKS_PER_MONTH = 52 / 12
-const STEP_CAP = 2400
 
 const active = (subs: Subscription[]) => subs.filter((s) => s.is_active)
 
@@ -34,20 +34,6 @@ function monthlyEquivalent(sub: Subscription, conv: Converter): number {
 
 function categoryOf(sub: Subscription): string {
   return POPULAR_SERVICES.find((s) => s.brandKey === sub.brand_key)?.category ?? sub.category ?? 'Other'
-}
-
-/** Number of charge occurrences for a sub within [start, end]. */
-function occurrencesInRange(sub: Subscription, start: Date, end: Date): number {
-  if (!sub.is_active) return 0
-  const from = sub.is_free_trial && sub.trial_end_date ? parseISO(sub.trial_end_date) : parseISO(sub.start_date)
-  if (sub.billing_period === 'once') return !isBefore(from, start) && !isAfter(from, end) ? 1 : 0
-  const step = sub.billing_period === 'weekly' ? addWeeks : sub.billing_period === 'yearly' ? addYears : addMonths
-  let d = from
-  let steps = 0
-  while (isBefore(d, start) && steps < STEP_CAP) { d = step(d, 1); steps++ }
-  let count = 0
-  while (!isAfter(d, end) && steps < STEP_CAP) { count++; d = step(d, 1); steps++ }
-  return count
 }
 
 /** Start of the current period (weeks start Monday). */
