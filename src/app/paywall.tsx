@@ -13,7 +13,7 @@ import PaywallActions from '@/components/paywall/PaywallActions'
 const ENTITLEMENT = 'MySubList Pro'
 const FEATURES = [
   { title: 'Unlimited Subscriptions', subtitle: 'Free plan is limited to 5' },
-  { title: 'Unlimited AI Advisor Messages', subtitle: 'Free plan is limited to 5 messages per day' },
+  { title: '50 AI Advisor Messages / Day', subtitle: 'Free plan is limited to 5 messages per day' },
   { title: 'Multi-Currency Support', subtitle: 'Track and convert spending in any currency' },
 ]
 
