@@ -69,7 +69,7 @@ export default function EmailChangeForm({ visible, currentEmail, onClose }: Prop
               <View className={`h-[52px] flex-row items-center rounded-xl border bg-white px-4 ${error ? 'border-[#EF4444]' : 'border-[#DAD5E8]'}`}>
                 <Ionicons name="mail-outline" size={18} color="#7C4DFF" />
                 <TextInput
-                  className="ml-3 flex-1 text-[15px] text-[#1A1A2E]"
+                  className="ml-3 flex-1 h-full text-[15px] text-[#1A1A2E]"
                   placeholder="Enter new email"
                   placeholderTextColor="#9CA3AF"
                   value={email}

@@ -30,7 +30,7 @@ export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProp
           <Text className="text-[14px] font-semibold text-[#111827] mb-2">Price</Text>
           <View className="flex-row items-center bg-white border border-[#DAD5E8] rounded-2xl h-[54px] px-4">
             <Text className="text-[16px] text-[#667085]">$</Text>
-            <TextInput value={f.price} onChangeText={f.setPrice} placeholder="0.00" placeholderTextColor="#9CA3AF" keyboardType="decimal-pad" className="flex-1 ml-2 text-[16px] text-[#111827]" />
+            <TextInput value={f.price} onChangeText={f.setPrice} placeholder="0.00" placeholderTextColor="#9CA3AF" keyboardType="decimal-pad" className="flex-1 ml-2 h-full text-[16px] text-[#111827]" />
           </View>
           {f.errors.price ? <Text className="text-[12px] text-[#EF4444] mt-1">{f.errors.price}</Text> : null}
         </View>

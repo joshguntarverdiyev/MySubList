@@ -78,7 +78,7 @@ export default function AddSubscription() {
             onChangeText={setQuery}
             placeholder="Search service"
             placeholderTextColor="#9CA3AF"
-            className="flex-1 ml-3 text-[16px] text-[#111827]"
+            className="flex-1 ml-3 h-full text-[16px] text-[#111827]"
             autoCapitalize="none"
             returnKeyType="search"
           />

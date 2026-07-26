@@ -5,8 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  ScrollView,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -69,47 +68,45 @@ export default function SignInScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
+    <ScrollView
       style={{ flex: 1, backgroundColor: '#F0EBFF' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingTop: insets.top + 32,
+        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 24,
+      }}
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      showsVerticalScrollIndicator={false}
     >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'space-between',
-          paddingTop: insets.top + 32,
-          paddingBottom: insets.bottom + 32,
-          paddingHorizontal: 24,
-        }}
-      >
-        {/* Top + Middle grouped together — centered in remaining space */}
-        <View style={{ flex: 1, justifyContent: 'center' }} className="gap-y-8">
-          {/* Logo + heading */}
-          <View>
-            <View className="flex-row items-center justify-center gap-x-2 mb-8">
-              <Image
-                source={require('../../../assets/icon.png')}
-                style={{ width: 40, height: 40, borderRadius: 10 }}
-                contentFit="cover"
-              />
-              <Text className="text-[26px] font-bold tracking-tight text-[#1A1A2E]">
-                My<Text className="text-[#7C4DFF]">SubList</Text>
-              </Text>
-            </View>
-
-            <View className="items-center">
-              <Text className="text-[34px] font-bold text-[#1A1A2E] tracking-tight text-center">
-                Welcome Back
-              </Text>
-              <Text className="text-base text-[#6B7280] mt-1 text-center">
-                Sign in to continue tracking your subscriptions
-              </Text>
-            </View>
+      <View className="gap-y-8">
+        {/* Logo + heading */}
+        <View>
+          <View className="flex-row items-center justify-center gap-x-2 mb-8">
+            <Image
+              source={require('../../../assets/icon.png')}
+              style={{ width: 40, height: 40, borderRadius: 10 }}
+              contentFit="cover"
+            />
+            <Text className="text-[26px] font-bold tracking-tight text-[#1A1A2E]">
+              My<Text className="text-[#7C4DFF]">SubList</Text>
+            </Text>
           </View>
 
-          {/* Form fields */}
-          <View className="gap-y-5">
-          {/* API error banner */}
+          <View className="items-center">
+            <Text className="text-[34px] font-bold text-[#1A1A2E] tracking-tight text-center">
+              Welcome Back
+            </Text>
+            <Text className="text-base text-[#6B7280] mt-1 text-center">
+              Sign in to continue tracking your subscriptions
+            </Text>
+          </View>
+        </View>
+
+        {/* Form fields */}
+        <View className="gap-y-5">
           {apiError ? (
             <View className="bg-[#FEE2E2] rounded-xl px-4 py-3">
               <Text className="text-[#EF4444] text-sm text-center">{apiError}</Text>
@@ -126,7 +123,7 @@ export default function SignInScreen() {
             >
               <Ionicons name="mail-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
                 placeholder="Enter your email"
                 placeholderTextColor="#9CA3AF"
                 value={email}
@@ -151,7 +148,7 @@ export default function SignInScreen() {
             >
               <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
                 placeholder="Enter your password"
                 placeholderTextColor="#9CA3AF"
                 value={password}
@@ -169,10 +166,9 @@ export default function SignInScreen() {
           <TouchableOpacity onPress={handleForgotPassword} className="self-end -mt-2">
             <Text className="text-sm font-bold text-[#7C4DFF]">Forgot password?</Text>
           </TouchableOpacity>
-          </View>
         </View>
 
-        {/* Bottom: button + links */}
+        {/* Button + links */}
         <View className="gap-y-4">
           <TouchableOpacity
             className="h-14 rounded-full bg-[#7C4DFF] items-center justify-center"
@@ -184,9 +180,7 @@ export default function SignInScreen() {
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text className="text-white text-lg font-semibold tracking-tight">
-                Sign in
-              </Text>
+              <Text className="text-white text-lg font-semibold tracking-tight">Sign in</Text>
             )}
           </TouchableOpacity>
 
@@ -204,6 +198,6 @@ export default function SignInScreen() {
       </View>
 
       <PasswordResetSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} title="Forgot Password" />
-    </KeyboardAvoidingView>
+    </ScrollView>
   )
 }

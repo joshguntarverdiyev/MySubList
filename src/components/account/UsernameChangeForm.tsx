@@ -47,7 +47,7 @@ export default function UsernameChangeForm({ visible, currentName, onClose }: Pr
           <View className={`h-[52px] flex-row items-center rounded-xl border bg-white px-4 ${error ? 'border-[#EF4444]' : 'border-[#DAD5E8]'}`}>
             <Ionicons name="person-outline" size={18} color="#7C4DFF" />
             <TextInput
-              className="ml-3 flex-1 text-[15px] text-[#1A1A2E]"
+              className="ml-3 flex-1 h-full text-[15px] text-[#1A1A2E]"
               placeholder="Enter your name"
               placeholderTextColor="#9CA3AF"
               value={name}
