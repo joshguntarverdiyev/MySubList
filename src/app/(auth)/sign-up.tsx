@@ -128,7 +128,7 @@ export default function SignUpScreen() {
             >
               <Ionicons name="person-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                 placeholder="Enter your full name"
                 placeholderTextColor="#9CA3AF"
                 value={fullName}
@@ -152,7 +152,7 @@ export default function SignUpScreen() {
             >
               <Ionicons name="mail-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                 placeholder="Enter your email"
                 placeholderTextColor="#9CA3AF"
                 value={email}
@@ -177,7 +177,7 @@ export default function SignUpScreen() {
             >
               <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                 placeholder="Enter your password"
                 placeholderTextColor="#9CA3AF"
                 value={password}
@@ -201,7 +201,7 @@ export default function SignUpScreen() {
             >
               <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
               <TextInput
-                className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                 placeholder="Confirm your password"
                 placeholderTextColor="#9CA3AF"
                 value={confirmPassword}

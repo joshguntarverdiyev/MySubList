@@ -82,7 +82,7 @@ export default function PasswordResetSheet({ visible, onClose, title, email: fix
                 <View className={`h-[54px] flex-row items-center rounded-xl border bg-white px-4 ${error ? 'border-[#EF4444]' : 'border-[#DAD5E8]'}`}>
                   <Ionicons name="mail-outline" size={18} color="#7C4DFF" />
                   <TextInput
-                    className="ml-3 flex-1 h-full text-sm text-[#1A1A2E]"
+                    className="ml-3 flex-1 h-full text-[14px] text-[#1A1A2E]"
                     placeholder="Your email address"
                     placeholderTextColor="#9CA3AF"
                     value={email}

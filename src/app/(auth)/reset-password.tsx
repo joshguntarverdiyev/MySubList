@@ -87,7 +87,7 @@ export default function ResetPasswordScreen() {
                 >
                   <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
                   <TextInput
-                    className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                    className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                     placeholder="New password"
                     placeholderTextColor="#9CA3AF"
                     value={password}
@@ -107,7 +107,7 @@ export default function ResetPasswordScreen() {
                 >
                   <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
                   <TextInput
-                    className="flex-1 ml-3 h-full text-sm text-[#1A1A2E]"
+                    className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
                     placeholder="Confirm new password"
                     placeholderTextColor="#9CA3AF"
                     value={confirm}
