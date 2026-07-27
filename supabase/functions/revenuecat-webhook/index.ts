@@ -16,9 +16,21 @@ const ENTITLEMENT = "MySubList Pro";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Constant-time string comparison so the shared-secret check doesn't leak the
+// secret via response timing. (Length is compared first, which is acceptable.)
+function safeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ab = enc.encode(a);
+  const bb = enc.encode(b);
+  if (ab.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ab.length; i++) diff |= ab[i] ^ bb[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   // 1. Authenticate the webhook via the shared secret (set in RC dashboard).
-  if (req.headers.get("Authorization") !== WEBHOOK_SECRET) {
+  if (!safeEqual(req.headers.get("Authorization") ?? "", WEBHOOK_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
 
