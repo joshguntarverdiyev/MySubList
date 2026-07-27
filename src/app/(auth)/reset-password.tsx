@@ -1,17 +1,11 @@
-import { useState } from 'react'
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native'
+import { useEffect, useState } from 'react'
+import { View, Text, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import AuthInput from '@/components/auth/AuthInput'
+import PrimaryButton from '@/components/auth/PrimaryButton'
 
 export default function ResetPasswordScreen() {
   const insets = useSafeAreaInsets()
@@ -21,6 +15,17 @@ export default function ResetPasswordScreen() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+  // null = still checking; false = arrived without a recovery session (invalid /
+  // expired link). The deep-link handler in _layout sets the session from the
+  // reset link before routing here, so a legitimate arrival always has one.
+  const [hasSession, setHasSession] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    ;(async () => {
+      const { data } = await supabase.auth.getSession()
+      setHasSession(!!data.session)
+    })()
+  }, [])
 
   async function handleSave() {
     setError('')
@@ -30,6 +35,14 @@ export default function ResetPasswordScreen() {
     }
     if (password !== confirm) {
       setError("Passwords don't match")
+      return
+    }
+
+    // Guard against the session lapsing between mount and submit — never update
+    // a password without an active (recovery) session.
+    const { data } = await supabase.auth.getSession()
+    if (!data.session) {
+      setHasSession(false)
       return
     }
 
@@ -59,7 +72,24 @@ export default function ResetPasswordScreen() {
           paddingHorizontal: 24,
         }}
       >
-        {done ? (
+        {hasSession === null ? (
+          <ActivityIndicator color="#7C4DFF" />
+        ) : hasSession === false ? (
+          <View className="items-center gap-y-4">
+            <Ionicons name="alert-circle" size={48} color="#EF4444" />
+            <Text className="text-[28px] font-bold text-[#1A1A2E] text-center">
+              Link invalid or expired
+            </Text>
+            <Text className="text-base text-[#6B7280] text-center">
+              Request a new password reset link and try again.
+            </Text>
+            <PrimaryButton
+              label="Back to Sign In"
+              onPress={() => router.replace('/(auth)/sign-in')}
+              className="mt-2 w-full"
+            />
+          </View>
+        ) : done ? (
           <View className="items-center gap-y-4">
             <Ionicons name="checkmark-circle" size={48} color="#10B981" />
             <Text className="text-[28px] font-bold text-[#1A1A2E] text-center">
@@ -78,66 +108,28 @@ export default function ResetPasswordScreen() {
             </View>
 
             <View className="gap-y-5">
-              <View>
-                <Text className="text-sm font-semibold text-[#1A1A2E] mb-1.5">New Password</Text>
-                <View
-                  className={`flex-row items-center bg-white rounded-xl border px-4 h-[54px] ${
-                    error ? 'border-[#EF4444]' : 'border-[#DAD5E8]'
-                  }`}
-                >
-                  <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
-                  <TextInput
-                    className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
-                    placeholder="New password"
-                    placeholderTextColor="#9CA3AF"
-                    value={password}
-                    onChangeText={(t) => { setPassword(t); setError('') }}
-                    secureTextEntry
-                    autoCapitalize="none"
-                  />
-                </View>
-              </View>
-
-              <View>
-                <Text className="text-sm font-semibold text-[#1A1A2E] mb-1.5">Confirm Password</Text>
-                <View
-                  className={`flex-row items-center bg-white rounded-xl border px-4 h-[54px] ${
-                    error ? 'border-[#EF4444]' : 'border-[#DAD5E8]'
-                  }`}
-                >
-                  <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
-                  <TextInput
-                    className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
-                    placeholder="Confirm new password"
-                    placeholderTextColor="#9CA3AF"
-                    value={confirm}
-                    onChangeText={(t) => { setConfirm(t); setError('') }}
-                    secureTextEntry
-                    autoCapitalize="none"
-                  />
-                </View>
-              </View>
-
-              {error ? (
-                <Text className="text-xs text-[#EF4444] -mt-2">{error}</Text>
-              ) : null}
+              <AuthInput
+                label="New Password"
+                icon="lock-closed-outline"
+                placeholder="New password"
+                value={password}
+                onChangeText={(t) => { setPassword(t); setError('') }}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+              <AuthInput
+                label="Confirm Password"
+                icon="lock-closed-outline"
+                placeholder="Confirm new password"
+                value={confirm}
+                onChangeText={(t) => { setConfirm(t); setError('') }}
+                secureTextEntry
+                autoCapitalize="none"
+                error={error}
+              />
             </View>
 
-            <TouchableOpacity
-              className="h-14 rounded-full bg-[#7C4DFF] items-center justify-center"
-              style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 8 }}
-              onPress={handleSave}
-              disabled={loading}
-              activeOpacity={0.85}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text className="text-white text-lg font-semibold tracking-tight">
-                  Save New Password
-                </Text>
-              )}
-            </TouchableOpacity>
+            <PrimaryButton label="Save New Password" onPress={handleSave} loading={loading} disabled={loading} />
           </View>
         )}
       </View>

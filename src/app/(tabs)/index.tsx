@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { View, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Image } from 'expo-image'
-import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import { useUserId } from '@/hooks/useUserId'
 import { useSubscriptionStore } from '@/store/subscriptionStore'
@@ -15,12 +13,13 @@ import {
 import { toRowItem, toUpcomingItem } from '@/utils/homeDisplay'
 import { formatCurrency } from '@/utils/currency'
 import { makeConverter } from '@/utils/convert'
+import HomeHeader from '@/components/home/HomeHeader'
 import SpendCard from '@/components/home/SpendCard'
 import SavingsCard from '@/components/home/SavingsCard'
 import AnalyticsPreview from '@/components/home/AnalyticsPreview'
 import SavingsModal from '@/components/home/SavingsModal'
 import UpcomingPayments from '@/components/home/UpcomingPayments'
-import SubscriptionRow from '@/components/home/SubscriptionRow'
+import AllSubscriptions from '@/components/home/AllSubscriptions'
 import HomeSkeleton from '@/components/home/HomeSkeleton'
 import EmptyState from '@/components/home/EmptyState'
 import ErrorState from '@/components/home/ErrorState'
@@ -85,27 +84,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 96 }}
       >
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-6 mb-6">
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require('../../../assets/icon.png')}
-              style={{ width: 40, height: 40, borderRadius: 10, marginRight: 8 }}
-              contentFit="cover"
-            />
-            <Text style={{ fontSize: 22, fontWeight: '700', color: '#1A1A2E' }}>
-              My<Text style={{ color: '#7C4DFF' }}>SubList</Text>
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => router.push('/subscription/add')}
-            className="w-10 h-10 rounded-full bg-[#7C4DFF] items-center justify-center"
-            style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+        <HomeHeader onAdd={() => router.push('/subscription/add')} />
 
         {isLoading && subscriptions.length === 0 ? (
           <HomeSkeleton />
@@ -133,33 +112,13 @@ export default function HomeScreen() {
               <UpcomingPayments items={upcoming} />
             </View>
 
-            <View
-              className="mt-6 px-6"
+            <AllSubscriptions
+              items={visible}
+              showAll={showAll}
+              canToggle={subscriptions.length > VISIBLE_LIMIT}
+              onToggle={toggleShowAll}
               onLayout={(e) => { sectionYRef.current = e.nativeEvent.layout.y }}
-            >
-              <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-[20px] font-bold text-[#1A1A2E]">All Subscriptions</Text>
-                {subscriptions.length > VISIBLE_LIMIT && (
-                  <TouchableOpacity onPress={toggleShowAll}>
-                    <Text className="text-[15px] font-semibold text-[#7C4DFF]">
-                      {showAll ? 'See less' : 'See all'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View
-                className="bg-white rounded-[22px] overflow-hidden"
-                style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
-              >
-                {visible.map((item, index) => (
-                  <SubscriptionRow
-                    key={item.id}
-                    item={item}
-                    isLast={index === visible.length - 1}
-                  />
-                ))}
-              </View>
-            </View>
+            />
           </>
         )}
       </ScrollView>

@@ -1,20 +1,9 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/authStore'
 
-/** Returns the current authenticated user's id, or null while unknown. */
+/**
+ * Returns the current authenticated user's id, or null while unknown. Backed by
+ * a single shared session listener (authStore) rather than one per screen.
+ */
 export function useUserId() {
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    ;(async () => {
-      const { data } = await supabase.auth.getSession()
-      setUserId(data.session?.user.id ?? null)
-    })()
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id ?? null)
-    })
-    return () => sub.subscription.unsubscribe()
-  }, [])
-
-  return userId
+  return useAuthStore((s) => s.userId)
 }
