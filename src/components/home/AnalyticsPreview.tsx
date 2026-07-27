@@ -22,7 +22,7 @@ export default function AnalyticsPreview() {
 
   return (
     <Pressable
-      onPress={() => router.push('/analytics' as any)}
+      onPress={() => router.push('/analytics')}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       className="mx-6"

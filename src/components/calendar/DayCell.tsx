@@ -44,7 +44,7 @@ function DayCell({ date, dateKey, inMonth, width, subs, onShowDay }: DayCellProp
       {single ? (
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push(`/subscription/${single.id}` as any)}
+          onPress={() => router.push(`/subscription/${single.id}`)}
           className="mt-0.5"
         >
           <BrandLogo brandKey={single.brand_key} name={single.name} color={single.color} size={20} radius={5} />

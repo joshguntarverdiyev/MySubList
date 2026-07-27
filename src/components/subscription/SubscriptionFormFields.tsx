@@ -41,7 +41,7 @@ export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProp
             placeholder="EUR"
             options={CURRENCIES}
             lockedValues={lockedCurrencies}
-            onSelect={(v) => (isCurrencyLocked(v, isPremium) ? router.push('/paywall' as any) : f.setCurrency(v))}
+            onSelect={(v) => (isCurrencyLocked(v, isPremium) ? router.push('/paywall') : f.setCurrency(v))}
           />
         </View>
       </View>

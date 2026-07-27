@@ -15,7 +15,7 @@ export default function EmptyState() {
         Add your first subscription to start tracking your spending.
       </Text>
       <TouchableOpacity
-        onPress={() => router.push('/subscription/add' as any)}
+        onPress={() => router.push('/subscription/add')}
         activeOpacity={0.9}
         className="h-12 px-6 rounded-full bg-[#7C4DFF] flex-row items-center justify-center"
         style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 20, elevation: 6 }}

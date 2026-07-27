@@ -30,7 +30,7 @@ export default function AddSubscription() {
   const blocked = !isPremium && activeCount >= FREE_SUB_LIMIT
 
   useEffect(() => {
-    if (blocked) router.replace('/paywall' as any)
+    if (blocked) router.replace('/paywall')
   }, [blocked])
 
   const q = query.trim().toLowerCase()
@@ -56,9 +56,9 @@ export default function AddSubscription() {
       router.push({
         pathname: '/subscription/new',
         params: { name: service.name, brandKey: service.brandKey },
-      } as any)
+      })
     } else {
-      router.push('/subscription/new' as any)
+      router.push('/subscription/new')
     }
   }
 

@@ -102,7 +102,7 @@ export default function AdvisorScreen() {
             : ERROR_MSG
         appendAssistant(content, `err-${now}`)
         // Free users hitting the daily cap get the paywall (premium never 429s).
-        if (isLimit && !isPremium) router.push('/paywall' as any)
+        if (isLimit && !isPremium) router.push('/paywall')
       } finally {
         setTyping(false)
         scrollToEnd()

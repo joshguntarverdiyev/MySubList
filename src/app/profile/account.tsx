@@ -39,7 +39,7 @@ export default function AccountScreen() {
           <SettingsRow icon="person-outline" label="Username" subtitle={displayName} divider onPress={() => setUsernameOpen(true)} />
           <SettingsRow icon="mail-outline" label="Email" subtitle={email} divider onPress={() => setEmailOpen(true)} />
           <SettingsRow icon="lock-closed-outline" label="Change Password" divider onPress={() => setPasswordOpen(true)} />
-          <SettingsRow icon="shield-checkmark-outline" label="Privacy & Security" onPress={() => router.push('/profile/privacy-security' as any)} />
+          <SettingsRow icon="shield-checkmark-outline" label="Privacy & Security" onPress={() => router.push('/profile/privacy-security')} />
         </SettingsCard>
       </ScrollView>
 

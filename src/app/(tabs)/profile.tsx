@@ -88,7 +88,7 @@ export default function ProfileScreen() {
 
         {!s.is_premium ? (
           <Pressable
-            onPress={() => router.push('/paywall' as any)}
+            onPress={() => router.push('/paywall')}
             className="mt-4 flex-row items-center justify-between rounded-2xl border-l-4 border-[#7C4DFF] bg-white px-4 py-4"
           >
             <View className="flex-1 pr-3">
@@ -163,7 +163,7 @@ export default function ProfileScreen() {
         onSelect={(v) => {
           if (isCurrencyLocked(v, s.is_premium)) {
             setSheet(null)
-            router.push('/paywall' as any)
+            router.push('/paywall')
           } else {
             persist({ currency: v }, () => s.setCurrency(v))
           }

@@ -29,7 +29,7 @@ export default function WelcomeScreen() {
         </Text>
 
         <Pressable
-          onPress={() => router.replace('/(onboarding)/step-1' as any)}
+          onPress={() => router.replace('/(onboarding)/step-1')}
           className="mb-5 w-full items-center justify-center rounded-full bg-primary"
           style={{
             height: 57,
@@ -44,7 +44,7 @@ export default function WelcomeScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push('/(auth)/sign-in' as any)}
+          onPress={() => router.push('/(auth)/sign-in')}
           className="flex-row items-center gap-1"
         >
           <Text className="text-base font-medium text-primary">I have an account</Text>

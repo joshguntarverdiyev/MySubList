@@ -34,7 +34,7 @@ export default function SavingsModal({ visible, onClose, subscriptions, currency
 
   const askAdvisor = () => {
     onClose()
-    router.push({ pathname: '/(tabs)/advisor', params: { ask: SAVINGS_PROMPT } } as any)
+    router.push({ pathname: '/(tabs)/advisor', params: { ask: SAVINGS_PROMPT } })
   }
 
   return (

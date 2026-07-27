@@ -98,7 +98,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => router.push('/subscription/add' as any)}
+            onPress={() => router.push('/subscription/add')}
             className="w-10 h-10 rounded-full bg-[#7C4DFF] items-center justify-center"
             style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }}
             activeOpacity={0.85}

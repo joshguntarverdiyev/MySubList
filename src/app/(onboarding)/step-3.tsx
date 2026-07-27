@@ -16,7 +16,7 @@ export default function OnboardingStep3() {
       <Pressable
         onPress={async () => {
           await SecureStore.setItemAsync('onboarding_complete', 'true');
-          router.replace('/(auth)/sign-up' as any);
+          router.replace('/(auth)/sign-up');
         }}
         hitSlop={12}
         className="absolute right-6 z-10"
@@ -65,7 +65,7 @@ export default function OnboardingStep3() {
         <Pressable
           onPress={async () => {
           await SecureStore.setItemAsync('onboarding_complete', 'true');
-          router.replace('/(auth)/sign-up' as any);
+          router.replace('/(auth)/sign-up');
         }}
           style={{
             width: 300,

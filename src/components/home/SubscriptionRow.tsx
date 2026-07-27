@@ -25,7 +25,7 @@ function SubscriptionRow({ item, isLast }: Props) {
       <TouchableOpacity
         className="flex-row items-center px-4 py-3"
         activeOpacity={0.7}
-        onPress={() => router.push(`/subscription/${item.id}` as any)}
+        onPress={() => router.push(`/subscription/${item.id}`)}
       >
         {/* Brand logo (falls back to colored initial) */}
         <View className="mr-4">

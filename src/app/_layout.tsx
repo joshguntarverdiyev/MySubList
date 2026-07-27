@@ -38,10 +38,10 @@ export default function RootLayout() {
     (async () => {
       const onboarded = await SecureStore.getItemAsync('onboarding_complete');
       if (onboarded !== 'true') {
-        router.replace('/(onboarding)/welcome' as any);
+        router.replace('/(onboarding)/welcome');
       } else {
         const { data } = await supabase.auth.getSession();
-        router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in') as any);
+        router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in'));
       }
       setReady(true);
     })();
@@ -52,7 +52,7 @@ export default function RootLayout() {
   // deep-link handler route those, to avoid overriding e.g. password reset.)
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') router.replace('/(auth)/sign-in' as any);
+      if (event === 'SIGNED_OUT') router.replace('/(auth)/sign-in');
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -61,7 +61,7 @@ export default function RootLayout() {
   // the subscription detail is a v2 enhancement (data.subscriptionId is set).
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener(() => {
-      router.replace('/(tabs)' as any);
+      router.replace('/(tabs)');
     });
     return () => sub.remove();
   }, []);
@@ -84,7 +84,7 @@ export default function RootLayout() {
 
       const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       if (error) return;
-      router.replace((isReset ? '/(auth)/reset-password' : '/(tabs)') as any);
+      router.replace((isReset ? '/(auth)/reset-password' : '/(tabs)'));
     };
 
     (async () => {

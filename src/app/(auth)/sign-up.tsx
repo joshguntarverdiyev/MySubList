@@ -73,9 +73,9 @@ export default function SignUpScreen() {
     // link — send them to the verify screen. If confirmation is off, a session
     // is present and we go straight into the app.
     if (data.session) {
-      router.replace('/(tabs)' as any)
+      router.replace('/(tabs)')
     } else {
-      router.replace({ pathname: '/(auth)/verify-email', params: { email: trimmedEmail } } as any)
+      router.replace({ pathname: '/(auth)/verify-email', params: { email: trimmedEmail } })
     }
   }
 

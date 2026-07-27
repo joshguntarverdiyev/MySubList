@@ -19,7 +19,7 @@ export default function DetailHeader({ onDelete, onEdit }: DetailHeaderProps) {
           style: 'destructive',
           onPress: async () => {
             const ok = await onDelete()
-            if (ok) router.replace('/(tabs)' as any)
+            if (ok) router.replace('/(tabs)')
             else Alert.alert('Error', 'Could not delete. Please try again.')
           },
         },

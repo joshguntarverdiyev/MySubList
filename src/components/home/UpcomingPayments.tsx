@@ -8,7 +8,7 @@ const UpcomingCard = memo(function UpcomingCard({ item }: { item: UpcomingItem }
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      onPress={() => router.push(`/subscription/${item.id}` as any)}
+      onPress={() => router.push(`/subscription/${item.id}`)}
       className="bg-white rounded-xl mr-3"
       style={{ minWidth: 140, shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
     >

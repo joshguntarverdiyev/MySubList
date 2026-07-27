@@ -16,7 +16,7 @@ export default function OnboardingStep1() {
       <Pressable
         onPress={async () => {
           await SecureStore.setItemAsync('onboarding_complete', 'true');
-          router.replace('/(auth)/sign-up' as any);
+          router.replace('/(auth)/sign-up');
         }}
         hitSlop={12}
         className="absolute right-6 z-10"
@@ -77,7 +77,7 @@ export default function OnboardingStep1() {
 
         {/* Next button — 300px centred, radius 29, Figma shadow */}
         <Pressable
-          onPress={() => router.push('/(onboarding)/step-2' as any)}
+          onPress={() => router.push('/(onboarding)/step-2')}
           style={{
             width: 300,
             height: 57,

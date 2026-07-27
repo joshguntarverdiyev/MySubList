@@ -15,7 +15,7 @@ export default function DaySubsModal({ dateKey, subs, onClose }: DaySubsModalPro
 
   const open = (id: string) => {
     onClose()
-    router.push(`/subscription/${id}` as any)
+    router.push(`/subscription/${id}`)
   }
 
   return (
