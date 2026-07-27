@@ -1,71 +1,17 @@
 import { useState } from 'react'
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
-import { router, Link } from 'expo-router'
-import { supabase } from '@/lib/supabase'
+import { Link } from 'expo-router'
 import PasswordResetSheet from '@/components/auth/PasswordResetSheet'
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-interface FieldErrors {
-  email?: string
-  password?: string
-}
+import AuthInput from '@/components/auth/AuthInput'
+import PrimaryButton from '@/components/auth/PrimaryButton'
+import { useSignInForm } from '@/hooks/useSignInForm'
 
 export default function SignInScreen() {
   const insets = useSafeAreaInsets()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [apiError, setApiError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const f = useSignInForm()
   const [forgotOpen, setForgotOpen] = useState(false)
-
-  function validate(): boolean {
-    const errors: FieldErrors = {}
-    if (!EMAIL_REGEX.test(email)) errors.email = 'Enter a valid email address'
-    if (!password) errors.password = 'Password is required'
-    setFieldErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  async function handleSignIn() {
-    setApiError('')
-    if (!validate()) return
-
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
-    setLoading(false)
-
-    if (error) {
-      // Supabase returns this when the account exists but the email is unconfirmed.
-      if (error.code === 'email_not_confirmed' || /not confirmed/i.test(error.message)) {
-        setApiError('Please verify your email first. Check your inbox for our verification link.')
-        return
-      }
-      setApiError('Invalid email or password. Please try again.')
-      return
-    }
-
-    router.replace('/(tabs)')
-  }
-
-  function handleForgotPassword() {
-    setForgotOpen(true)
-  }
 
   return (
     <ScrollView
@@ -107,82 +53,44 @@ export default function SignInScreen() {
 
         {/* Form fields */}
         <View className="gap-y-5">
-          {apiError ? (
+          {f.apiError ? (
             <View className="bg-[#FEE2E2] rounded-xl px-4 py-3">
-              <Text className="text-[#EF4444] text-sm text-center">{apiError}</Text>
+              <Text className="text-[#EF4444] text-sm text-center">{f.apiError}</Text>
             </View>
           ) : null}
 
-          {/* Email */}
-          <View>
-            <Text className="text-sm font-semibold text-[#1A1A2E] mb-1.5">Email</Text>
-            <View
-              className={`flex-row items-center bg-white rounded-xl border px-4 h-[54px] ${
-                fieldErrors.email ? 'border-[#EF4444]' : 'border-[#DAD5E8]'
-              }`}
-            >
-              <Ionicons name="mail-outline" size={18} color="#7C4DFF" />
-              <TextInput
-                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
-                placeholder="Enter your email"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={(t) => { setEmail(t); setFieldErrors(p => ({ ...p, email: undefined })) }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-            {fieldErrors.email ? (
-              <Text className="text-xs text-[#EF4444] mt-1">{fieldErrors.email}</Text>
-            ) : null}
-          </View>
+          <AuthInput
+            label="Email"
+            icon="mail-outline"
+            placeholder="Enter your email"
+            value={f.email}
+            onChangeText={(t) => { f.setEmail(t); f.clearError('email') }}
+            error={f.fieldErrors.email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-          {/* Password */}
-          <View>
-            <Text className="text-sm font-semibold text-[#1A1A2E] mb-1.5">Password</Text>
-            <View
-              className={`flex-row items-center bg-white rounded-xl border px-4 h-[54px] ${
-                fieldErrors.password ? 'border-[#EF4444]' : 'border-[#DAD5E8]'
-              }`}
-            >
-              <Ionicons name="lock-closed-outline" size={18} color="#7C4DFF" />
-              <TextInput
-                className="flex-1 ml-3 h-full text-[14px] text-[#1A1A2E]"
-                placeholder="Enter your password"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={(t) => { setPassword(t); setFieldErrors(p => ({ ...p, password: undefined })) }}
-                secureTextEntry
-                autoCapitalize="none"
-              />
-            </View>
-            {fieldErrors.password ? (
-              <Text className="text-xs text-[#EF4444] mt-1">{fieldErrors.password}</Text>
-            ) : null}
-          </View>
+          <AuthInput
+            label="Password"
+            icon="lock-closed-outline"
+            placeholder="Enter your password"
+            value={f.password}
+            onChangeText={(t) => { f.setPassword(t); f.clearError('password') }}
+            error={f.fieldErrors.password}
+            secureTextEntry
+            autoCapitalize="none"
+          />
 
           {/* Forgot password */}
-          <TouchableOpacity onPress={handleForgotPassword} className="self-end -mt-2">
+          <TouchableOpacity onPress={() => setForgotOpen(true)} className="self-end -mt-2">
             <Text className="text-sm font-bold text-[#7C4DFF]">Forgot password?</Text>
           </TouchableOpacity>
         </View>
 
         {/* Button + links */}
         <View className="gap-y-4">
-          <TouchableOpacity
-            className="h-14 rounded-full bg-[#7C4DFF] items-center justify-center"
-            style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 8 }}
-            onPress={handleSignIn}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text className="text-white text-lg font-semibold tracking-tight">Sign in</Text>
-            )}
-          </TouchableOpacity>
+          <PrimaryButton label="Sign in" onPress={f.handleSignIn} loading={f.loading} disabled={f.loading} />
 
           <View className="h-px bg-[#E5E7EB] mx-4" />
 
