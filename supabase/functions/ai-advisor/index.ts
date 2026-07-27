@@ -295,11 +295,14 @@ Deno.serve(async (req) => {
   }
 
   // 2. PER-MINUTE BURST RATE LIMIT --------------------------------------------
-  // Count this user's messages in the last 60s (RLS scopes rows to the user).
+  // Count this user's messages in the last 60s. RLS already scopes rows to the
+  // user; the explicit user_id filter is defense-in-depth so the limit never
+  // depends solely on an RLS policy staying correct.
   const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();
   const { count: recentCount, error: recentError } = await supabase
     .from("ai_messages")
     .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
     .eq("role", "user")
     .gte("created_at", oneMinuteAgo);
 
@@ -341,6 +344,7 @@ Deno.serve(async (req) => {
     const { count, error: countError } = await supabase
       .from("ai_messages")
       .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
       .eq("role", "user")
       .gte("created_at", startOfDayUtc.toISOString());
 
@@ -359,6 +363,7 @@ Deno.serve(async (req) => {
   const { data: historyRows, error: historyError } = await supabase
     .from("ai_messages")
     .select("role, content")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(HISTORY_LIMIT);
 
@@ -373,6 +378,7 @@ Deno.serve(async (req) => {
     .select(
       "name, plan_name, price, currency, billing_period, is_free_trial, is_active, start_date, trial_end_date",
     )
+    .eq("user_id", user.id)
     .eq("is_active", true);
 
   if (subsError) {
