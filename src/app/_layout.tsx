@@ -4,6 +4,7 @@ import { Stack, router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +12,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useUserId } from '@/hooks/useUserId';
 import { configureRevenueCat } from '@/lib/revenuecat';
+
+// Keep the native splash up through JS init + the initial routing decision, so
+// there's no flash between the native splash and the first screen. Hidden in the
+// routing effect once we know where to send the user.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Show reminders as a banner even if the app is foregrounded when one fires.
 Notifications.setNotificationHandler({
@@ -44,6 +50,7 @@ export default function RootLayout() {
         router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in'));
       }
       setReady(true);
+      await SplashScreen.hideAsync().catch(() => {});
     })();
   }, []);
 
