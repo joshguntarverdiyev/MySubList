@@ -42,7 +42,7 @@ export default function SignUpScreen() {
     const errors: FieldErrors = {}
     if (!fullName.trim()) errors.fullName = 'Full name is required'
     if (!EMAIL_REGEX.test(email)) errors.email = 'Enter a valid email address'
-    if (password.length < 6) errors.password = 'Password must be at least 6 characters'
+    if (password.length < 8) errors.password = 'Password must be at least 8 characters'
     if (confirmPassword !== password) errors.confirmPassword = 'Passwords do not match'
     setFieldErrors(errors)
     return Object.keys(errors).length === 0

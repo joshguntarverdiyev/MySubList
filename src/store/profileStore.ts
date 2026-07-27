@@ -34,13 +34,16 @@ const DEFAULTS = {
 export const useProfileStore = create<ProfileState>((set) => ({
   ...DEFAULTS,
   fetchProfile: async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('full_name, avatar_url, currency, first_day_of_week, notification_days_before, is_premium')
-      .eq('id', userId)
-      .single()
-    // Email lives on the auth user, not the profiles row.
-    const { data: userData } = await supabase.auth.getUser()
+    // Fetch the profile row and the auth user in parallel — the email lives on
+    // the auth user, not the profiles row.
+    const [{ data, error }, { data: userData }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('full_name, avatar_url, currency, first_day_of_week, notification_days_before, is_premium')
+        .eq('id', userId)
+        .single(),
+      supabase.auth.getUser(),
+    ])
     const email = userData.user?.email ?? ''
     // Fall back to defaults on any error or missing row — never block the UI.
     if (error || !data) {

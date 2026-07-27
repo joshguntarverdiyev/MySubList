@@ -24,7 +24,7 @@ function syncPremium(info: CustomerInfo) {
   // RevenueCat). Covers purchase/restore/transfer cases a webhook can miss, so
   // server-side gates (sub limit, AI limit) never treat a Pro user as free.
   supabase.functions.invoke('sync-premium').catch((e) => {
-    console.log('sync-premium error:', e)
+    if (__DEV__) console.log('sync-premium error:', e)
   })
 }
 
@@ -44,6 +44,6 @@ export async function configureRevenueCat(userId: string) {
   try {
     syncPremium(await Purchases.getCustomerInfo())
   } catch (e) {
-    console.log('getCustomerInfo error:', e)
+    if (__DEV__) console.log('getCustomerInfo error:', e)
   }
 }

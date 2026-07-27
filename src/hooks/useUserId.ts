@@ -6,9 +6,10 @@ export function useUserId() {
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    ;(async () => {
+      const { data } = await supabase.auth.getSession()
       setUserId(data.session?.user.id ?? null)
-    })
+    })()
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserId(session?.user.id ?? null)
     })

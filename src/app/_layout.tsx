@@ -87,9 +87,10 @@ export default function RootLayout() {
       router.replace((isReset ? '/(auth)/reset-password' : '/(tabs)') as any);
     };
 
-    Linking.getInitialURL().then((url) => {
+    (async () => {
+      const url = await Linking.getInitialURL();
       if (url) handleDeepLink(url);
-    });
+    })();
 
     const subscription = Linking.addEventListener('url', ({ url }) => {
       handleDeepLink(url);

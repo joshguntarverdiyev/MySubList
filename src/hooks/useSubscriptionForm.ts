@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Alert } from 'react-native'
 import { router } from 'expo-router'
 import { format, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
