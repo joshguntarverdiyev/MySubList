@@ -58,8 +58,8 @@ export default function AnalyticsScreen() {
           className="h-9 flex-row items-center gap-x-1.5 rounded-full bg-white px-3"
           style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 2 }}
         >
-          <Ionicons name="options-outline" size={18} color="#6C47D9" />
-          <Text className="text-[13px] font-semibold text-[#6C47D9]">{rangeLabel}</Text>
+          <Ionicons name="options-outline" size={18} color="#7C4DFF" />
+          <Text className="text-[13px] font-semibold text-[#7C4DFF]">{rangeLabel}</Text>
         </Pressable>
         <Text
           pointerEvents="none"

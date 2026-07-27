@@ -12,7 +12,7 @@ function Bar({ delay }: { delay: number }) {
       from={{ height: 7 }}
       animate={{ height: 18 }}
       transition={{ loop: true, repeatReverse: true, type: 'timing', duration: 700, delay }}
-      style={{ width: 3.5, borderRadius: 2, backgroundColor: '#6C47D9' }}
+      style={{ width: 3.5, borderRadius: 2, backgroundColor: '#7C4DFF' }}
     />
   )
 }
@@ -48,7 +48,7 @@ export default function AnalyticsPreview() {
           {/* Inner white card */}
           <View className="flex-row items-center rounded-[15px] bg-white px-4 py-3.5">
             <View className="h-10 w-10 items-center justify-center rounded-xl bg-[#EDE9F8]">
-              <Ionicons name="stats-chart-outline" size={22} color="#6C47D9" />
+              <Ionicons name="stats-chart-outline" size={22} color="#7C4DFF" />
             </View>
             <View className="ml-3 flex-1">
               <Text className="text-[14px] font-bold text-[#1A1A2E]">View Analytics</Text>

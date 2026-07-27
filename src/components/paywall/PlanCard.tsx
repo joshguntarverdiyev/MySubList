@@ -28,11 +28,11 @@ export default function PlanCard({
       onPress={onPress}
       disabled={loading}
       className={`flex-1 rounded-xl px-3 py-4 ${
-        selected ? 'border-2 border-[#6C47D9] bg-[#F5F3FF]' : 'border border-[#E5E7EB] bg-white'
+        selected ? 'border-2 border-[#7C4DFF] bg-[#F5F3FF]' : 'border border-[#E5E7EB] bg-white'
       }`}
     >
       {bestValue ? (
-        <View className="absolute -top-2 right-2 rounded-full bg-[#6C47D9] px-2 py-0.5">
+        <View className="absolute -top-2 right-2 rounded-full bg-[#7C4DFF] px-2 py-0.5">
           <Text className="text-[9px] font-bold uppercase text-white">Best Value</Text>
         </View>
       ) : null}

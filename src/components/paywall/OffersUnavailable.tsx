@@ -19,7 +19,7 @@ export default function OffersUnavailable({ onRetry, onRestore }: Props) {
       <TouchableOpacity
         onPress={onRetry}
         activeOpacity={0.85}
-        className="mt-4 h-12 items-center justify-center rounded-xl bg-[#6C47D9] px-8"
+        className="mt-4 h-12 items-center justify-center rounded-xl bg-[#7C4DFF] px-8"
       >
         <Text className="text-[15px] font-bold text-white">Retry</Text>
       </TouchableOpacity>

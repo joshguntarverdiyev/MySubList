@@ -10,7 +10,7 @@ interface Props {
 export default function HeroSection({ topInset }: Props) {
   return (
     <LinearGradient
-      colors={['#6C47D9', '#8B5CF6']}
+      colors={['#7C4DFF', '#8B5CF6']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={{ paddingTop: topInset + 56, paddingBottom: 32 }}

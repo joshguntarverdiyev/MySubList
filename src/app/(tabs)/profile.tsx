@@ -89,7 +89,7 @@ export default function ProfileScreen() {
         {!s.is_premium ? (
           <Pressable
             onPress={() => router.push('/paywall' as any)}
-            className="mt-4 flex-row items-center justify-between rounded-2xl border-l-4 border-[#6C47D9] bg-white px-4 py-4"
+            className="mt-4 flex-row items-center justify-between rounded-2xl border-l-4 border-[#7C4DFF] bg-white px-4 py-4"
           >
             <View className="flex-1 pr-3">
               <Text className="text-[15px] font-bold text-[#1A1A2E]">⭐ Upgrade to Pro</Text>
@@ -97,7 +97,7 @@ export default function ProfileScreen() {
                 Unlock unlimited subscriptions and AI advice
               </Text>
             </View>
-            <Text className="text-[14px] font-bold text-[#6C47D9]">Upgrade →</Text>
+            <Text className="text-[14px] font-bold text-[#7C4DFF]">Upgrade →</Text>
           </Pressable>
         ) : null}
 

@@ -23,8 +23,8 @@ function InsightCard({ icon, color, label, value }: Card) {
 
 export default function InsightsGrid({ insights, currency }: Props) {
   const cards: Card[] = [
-    { icon: 'wallet-outline', color: '#6C47D9', label: 'Most Expensive Category', value: insights.mostExpensiveCategory },
-    { icon: 'calendar-outline', color: '#6C47D9', label: 'Yearly Projection', value: formatCurrency(insights.yearlyProjection, currency) },
+    { icon: 'wallet-outline', color: '#7C4DFF', label: 'Most Expensive Category', value: insights.mostExpensiveCategory },
+    { icon: 'calendar-outline', color: '#7C4DFF', label: 'Yearly Projection', value: formatCurrency(insights.yearlyProjection, currency) },
     { icon: 'flame-outline', color: '#EF4444', label: 'Cheapest Month', value: insights.cheapestMonth },
     { icon: 'star-outline', color: '#F59E0B', label: 'Most Expensive Sub', value: insights.mostExpensiveSub },
   ]

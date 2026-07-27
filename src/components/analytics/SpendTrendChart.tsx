@@ -15,7 +15,7 @@ const LABEL_H = 22
 const AXIS_W = 44
 const TOP_PAD = 10 // headroom so the top amount label isn't clipped
 
-export default function SpendTrendChart({ data, currency, color = '#6C47D9' }: Props) {
+export default function SpendTrendChart({ data, currency, color = '#7C4DFF' }: Props) {
   const { width } = useWindowDimensions()
   const innerW = width - 88 // screen - mx-6 (48) - card p-5 (40)
   const plotW = innerW - AXIS_W
