@@ -1,18 +1,14 @@
-import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
 const logo = require('../../assets/logo.png');
 
-// Splash screen — shows for 1.5s then routes to welcome (or auth/tabs once built).
+// Passive branded splash for the "/" route. Routing is owned entirely by the
+// root _layout (auth-gates on session + onboarding flag), so this screen never
+// navigates on its own — that avoids a race where a signed-in user briefly
+// flashes Welcome, and removes the old artificial delay.
 export default function Index() {
-  useEffect(() => {
-    const t = setTimeout(() => router.replace('/(onboarding)/welcome' as any), 1500);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <View className="flex-1 items-center justify-center bg-primary">
       <StatusBar style="light" />

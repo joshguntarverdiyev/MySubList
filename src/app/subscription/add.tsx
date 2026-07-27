@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native'
+import { useEffect, useMemo, useState } from 'react'
+import { View, Text, TextInput, SectionList, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -9,6 +9,15 @@ import { useSubscriptionStore } from '@/store/subscriptionStore'
 import { useProfileStore } from '@/store/profileStore'
 
 const FREE_SUB_LIMIT = 5
+const COLS = 4
+
+// Split a flat service list into fixed-width rows so the SectionList can render
+// a grid one virtualized row at a time (only on-screen cards mount/decode).
+function chunk(arr: Service[], size: number): Service[][] {
+  const rows: Service[][] = []
+  for (let i = 0; i < arr.length; i += size) rows.push(arr.slice(i, i + size))
+  return rows
+}
 
 export default function AddSubscription() {
   const insets = useSafeAreaInsets()
@@ -24,11 +33,23 @@ export default function AddSubscription() {
     if (blocked) router.replace('/paywall' as any)
   }, [blocked])
 
-  if (blocked) return null
-
   const q = query.trim().toLowerCase()
-  const filtered = POPULAR_SERVICES.filter((s) => s.name.toLowerCase().includes(q))
-  const categories = Array.from(new Set(POPULAR_SERVICES.map((s) => s.category)))
+
+  // Search results = one flat "Results" section; otherwise one section per
+  // category. Grouping/filtering only recomputes when the query changes.
+  const sections = useMemo(() => {
+    if (q) {
+      const filtered = POPULAR_SERVICES.filter((s) => s.name.toLowerCase().includes(q))
+      return filtered.length ? [{ title: 'Results', data: chunk(filtered, COLS) }] : []
+    }
+    const categories = Array.from(new Set(POPULAR_SERVICES.map((s) => s.category)))
+    return categories.map((cat) => ({
+      title: cat,
+      data: chunk(POPULAR_SERVICES.filter((s) => s.category === cat), COLS),
+    }))
+  }, [q])
+
+  if (blocked) return null
 
   const openNew = (service?: Service) => {
     if (service) {
@@ -43,11 +64,9 @@ export default function AddSubscription() {
 
   return (
     <View className="flex-1 bg-[#F0EBFF]">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 120 }}
-      >
-        {/* Header */}
+      {/* Fixed header: title + close + search (kept out of the list so the
+          TextInput never loses focus as results re-render). */}
+      <View style={{ paddingTop: insets.top + 12 }}>
         <View className="flex-row items-start justify-between px-6 mb-5">
           <View className="flex-1 pr-4">
             <Text className="text-[32px] font-bold text-[#111827] tracking-tight">
@@ -67,9 +86,8 @@ export default function AddSubscription() {
           </TouchableOpacity>
         </View>
 
-        {/* Search bar */}
         <View
-          className="flex-row items-center bg-white rounded-[18px] mx-6 px-4 h-[58px] mb-7"
+          className="flex-row items-center bg-white rounded-[18px] mx-6 px-4 h-[58px] mb-4"
           style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 4 }}
         >
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
@@ -83,36 +101,33 @@ export default function AddSubscription() {
             returnKeyType="search"
           />
         </View>
+      </View>
 
-        {/* Search results: flat grid. Otherwise: grouped by category. */}
-        {q ? (
-          filtered.length > 0 ? (
-            <>
-              <Text className="px-6 mb-4 text-[22px] font-bold text-[#111827]">Results</Text>
-              <View className="flex-row flex-wrap px-6 gap-x-3">
-                {filtered.map((service) => (
-                  <ServiceCard key={service.brandKey} service={service} onPress={() => openNew(service)} />
-                ))}
-              </View>
-            </>
-          ) : (
-            <View className="items-center py-10">
-              <Text className="text-[15px] text-[#9CA3AF]">No services found</Text>
-            </View>
-          )
-        ) : (
-          categories.map((cat) => (
-            <View key={cat} className="mb-2">
-              <Text className="px-6 mb-3 text-[18px] font-bold text-[#111827]">{cat}</Text>
-              <View className="flex-row flex-wrap px-6 gap-x-3 mb-2">
-                {POPULAR_SERVICES.filter((s) => s.category === cat).map((service) => (
-                  <ServiceCard key={service.brandKey} service={service} onPress={() => openNew(service)} />
-                ))}
-              </View>
-            </View>
-          ))
+      <SectionList
+        sections={sections}
+        keyExtractor={(row, i) => row[0]?.brandKey ?? String(i)}
+        renderSectionHeader={({ section }) => (
+          <Text className="px-6 mb-3 mt-2 text-[18px] font-bold text-[#111827]">
+            {section.title}
+          </Text>
         )}
-      </ScrollView>
+        renderItem={({ item }) => (
+          <View className="flex-row px-6 gap-x-3">
+            {item.map((service) => (
+              <ServiceCard key={service.brandKey} service={service} onPress={() => openNew(service)} />
+            ))}
+          </View>
+        )}
+        ListEmptyComponent={
+          <View className="items-center py-10">
+            <Text className="text-[15px] text-[#9CA3AF]">No services found</Text>
+          </View>
+        }
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      />
 
       {/* Add manually button */}
       <View
