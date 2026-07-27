@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { router } from 'expo-router'
 import { isSameDay, isBefore, startOfDay } from 'date-fns'
@@ -16,7 +17,7 @@ interface DayCellProps {
 
 const today = startOfDay(new Date())
 
-export default function DayCell({ date, dateKey, inMonth, width, subs, onShowDay }: DayCellProps) {
+function DayCell({ date, dateKey, inMonth, width, subs, onShowDay }: DayCellProps) {
   if (!inMonth) return <View style={{ width, minHeight: 58 }} />
 
   const isToday = isSameDay(date, today)
@@ -74,3 +75,5 @@ export default function DayCell({ date, dateKey, inMonth, width, subs, onShowDay
     </View>
   )
 }
+
+export default memo(DayCell)

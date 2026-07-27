@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text } from 'react-native'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
@@ -13,7 +14,7 @@ interface Props {
   userName?: string
 }
 
-export default function MessageBubble({ message, avatarUrl, userName }: Props) {
+function MessageBubble({ message, avatarUrl, userName }: Props) {
   const isUser = message.role === 'user'
   const time = safeTime(message.created_at)
 
@@ -53,3 +54,5 @@ function safeTime(iso: string): string {
   const d = new Date(iso)
   return isNaN(d.getTime()) ? '' : format(d, 'HH:mm')
 }
+
+export default memo(MessageBubble)

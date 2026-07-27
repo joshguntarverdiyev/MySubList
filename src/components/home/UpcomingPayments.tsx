@@ -1,9 +1,10 @@
+import { memo } from 'react'
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { router } from 'expo-router'
 import type { UpcomingItem } from '@/utils/homeDisplay'
 import BrandLogo from '@/components/subscription/BrandLogo'
 
-function UpcomingCard({ item }: { item: UpcomingItem }) {
+const UpcomingCard = memo(function UpcomingCard({ item }: { item: UpcomingItem }) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -31,7 +32,7 @@ function UpcomingCard({ item }: { item: UpcomingItem }) {
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 export default function UpcomingPayments({ items }: { items: UpcomingItem[] }) {
   if (items.length === 0) return null

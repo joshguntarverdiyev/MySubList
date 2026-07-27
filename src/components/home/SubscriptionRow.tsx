@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -18,7 +19,7 @@ interface Props {
   isLast: boolean
 }
 
-export default function SubscriptionRow({ item, isLast }: Props) {
+function SubscriptionRow({ item, isLast }: Props) {
   return (
     <>
       <TouchableOpacity
@@ -50,3 +51,5 @@ export default function SubscriptionRow({ item, isLast }: Props) {
     </>
   )
 }
+
+export default memo(SubscriptionRow)

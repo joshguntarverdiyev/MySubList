@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
@@ -50,18 +50,27 @@ export default function HomeScreen() {
     }, [userId, fetchSubscriptions, fetchProfile, fetchRates])
   )
 
-  const convert = makeConverter(rates, currency)
-  const totalPaid = formatCurrency(calculateTotalPaid(subscriptions, convert), currency)
-  const monthlySpend = formatCurrency(calculateMonthToDateSpend(subscriptions, convert), currency)
-  const savings = calculatePotentialSavings(subscriptions, convert)
+  // Derive every figure + display list in one memo so this only recomputes when
+  // the data (subs/rates/currency) actually changes — not on unrelated state
+  // like opening the savings modal or toggling "See all". rowItems are stable
+  // references so the memoized SubscriptionRow rows don't re-render needlessly.
+  const { totalPaid, monthlySpend, savings, upcoming, hasForeignCurrency, rowItems } = useMemo(() => {
+    const convert = makeConverter(rates, currency)
+    return {
+      totalPaid: formatCurrency(calculateTotalPaid(subscriptions, convert), currency),
+      monthlySpend: formatCurrency(calculateMonthToDateSpend(subscriptions, convert), currency),
+      savings: calculatePotentialSavings(subscriptions, convert),
+      upcoming: getUpcomingPayments(subscriptions).map(toUpcomingItem),
+      hasForeignCurrency: subscriptions.some((s) => s.currency !== currency),
+      rowItems: subscriptions.map(toRowItem),
+    }
+  }, [subscriptions, rates, currency])
 
   // Only note conversion when a sub is in a currency other than the profile's.
-  const hasForeignCurrency = subscriptions.some((s) => s.currency !== currency)
   const spendNote = hasForeignCurrency ? (ratesLoaded && ratesDate ? `rates as of ${ratesDate}` : 'approx.') : null
-  const upcoming = getUpcomingPayments(subscriptions).map(toUpcomingItem)
 
   const VISIBLE_LIMIT = 4
-  const visible = showAll ? subscriptions : subscriptions.slice(0, VISIBLE_LIMIT)
+  const visible = showAll ? rowItems : rowItems.slice(0, VISIBLE_LIMIT)
 
   const toggleShowAll = () => {
     const next = !showAll
@@ -142,10 +151,10 @@ export default function HomeScreen() {
                 className="bg-white rounded-[22px] overflow-hidden"
                 style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 4 }}
               >
-                {visible.map((sub, index) => (
+                {visible.map((item, index) => (
                   <SubscriptionRow
-                    key={sub.id}
-                    item={toRowItem(sub)}
+                    key={item.id}
+                    item={item}
                     isLast={index === visible.length - 1}
                   />
                 ))}

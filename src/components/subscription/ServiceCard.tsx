@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { TouchableOpacity, Text } from 'react-native'
 import type { Service } from '@/constants/services'
 import BrandLogo from '@/components/subscription/BrandLogo'
@@ -7,7 +8,7 @@ interface ServiceCardProps {
   onPress: () => void
 }
 
-export default function ServiceCard({ service, onPress }: ServiceCardProps) {
+function ServiceCard({ service, onPress }: ServiceCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -21,3 +22,5 @@ export default function ServiceCard({ service, onPress }: ServiceCardProps) {
     </TouchableOpacity>
   )
 }
+
+export default memo(ServiceCard)

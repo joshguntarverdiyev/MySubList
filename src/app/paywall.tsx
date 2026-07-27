@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
+import { View, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -7,8 +7,8 @@ import Purchases, { type PurchasesOffering } from 'react-native-purchases'
 import { useProfileStore } from '@/store/profileStore'
 import HeroSection from '@/components/paywall/HeroSection'
 import FeatureRow from '@/components/paywall/FeatureRow'
-import PlanCard from '@/components/paywall/PlanCard'
-import PaywallActions from '@/components/paywall/PaywallActions'
+import PaywallPlans from '@/components/paywall/PaywallPlans'
+import OffersUnavailable from '@/components/paywall/OffersUnavailable'
 
 const ENTITLEMENT = 'MySubList Pro'
 const FEATURES = [
@@ -26,22 +26,29 @@ export default function PaywallScreen() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly')
   const [purchasing, setPurchasing] = useState(false)
 
-  useEffect(() => {
-    const loadOffering = async () => {
-      try {
-        const offerings = await Purchases.getOfferings()
-        if (offerings.current) setOffering(offerings.current)
-      } catch (e) {
-        console.log('Offerings error:', e)
-      } finally {
-        setLoadingOffer(false)
-      }
+  const loadOffering = useCallback(async () => {
+    setLoadingOffer(true)
+    try {
+      const offerings = await Purchases.getOfferings()
+      setOffering(offerings.current ?? null)
+    } catch (e) {
+      if (__DEV__) console.log('Offerings error:', e)
+      setOffering(null)
+    } finally {
+      setLoadingOffer(false)
     }
-    loadOffering()
   }, [])
 
-  const monthlyPrice = offering?.monthly?.product.priceString ?? '€3.99'
-  const yearlyPrice = offering?.annual?.product.priceString ?? '€29.99'
+  useEffect(() => {
+    loadOffering()
+  }, [loadOffering])
+
+  // Prices come only from the real RevenueCat offering — never hardcoded, so a
+  // non-EUR storefront never sees euro amounts. If offerings fail to load we
+  // render a retry state (offersUnavailable) instead of fake prices.
+  const monthlyPrice = offering?.monthly?.product.priceString ?? ''
+  const yearlyPrice = offering?.annual?.product.priceString ?? ''
+  const offersUnavailable = !loadingOffer && !offering
 
   // Both plans are marketed with a 7-day trial (also being added to the Yearly
   // product in App Store Connect), so the trial UI is shown on both. Use the
@@ -119,28 +126,22 @@ export default function PaywallScreen() {
           ))}
         </View>
 
-        <View className="mx-5 mt-5 flex-row gap-x-3">
-          <PlanCard
-            label="Monthly" priceString={monthlyPrice} period="per month"
-            selected={selectedPlan === 'monthly'} onPress={() => setSelectedPlan('monthly')}
-            loading={loadingOffer}
+        {offersUnavailable ? (
+          <OffersUnavailable onRetry={loadOffering} onRestore={handleRestore} />
+        ) : (
+          <PaywallPlans
+            monthlyPrice={monthlyPrice}
+            yearlyPrice={yearlyPrice}
+            selectedPlan={selectedPlan}
+            onSelectPlan={setSelectedPlan}
+            loadingOffer={loadingOffer}
+            hasTrial={hasTrial}
+            trialDays={trialDays}
+            purchasing={purchasing}
+            onSubscribe={handleSubscribe}
+            onRestore={handleRestore}
           />
-          <PlanCard
-            label="Yearly" priceString={yearlyPrice} period="per year" savings="Save 37%"
-            selected={selectedPlan === 'yearly'} onPress={() => setSelectedPlan('yearly')}
-            bestValue loading={loadingOffer}
-          />
-        </View>
-
-        <PaywallActions
-          hasTrial={hasTrial}
-          trialDays={trialDays}
-          priceString={selectedPlan === 'yearly' ? yearlyPrice : monthlyPrice}
-          periodLabel={selectedPlan === 'yearly' ? 'year' : 'month'}
-          purchasing={purchasing}
-          onSubscribe={handleSubscribe}
-          onRestore={handleRestore}
-        />
+        )}
       </ScrollView>
     </View>
   )
