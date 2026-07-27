@@ -135,6 +135,8 @@ export default function PaywallScreen() {
         <PaywallActions
           hasTrial={hasTrial}
           trialDays={trialDays}
+          priceString={selectedPlan === 'yearly' ? yearlyPrice : monthlyPrice}
+          periodLabel={selectedPlan === 'yearly' ? 'year' : 'month'}
           purchasing={purchasing}
           onSubscribe={handleSubscribe}
           onRestore={handleRestore}

@@ -1,16 +1,19 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { INFO } from '@/constants/legal'
 
 interface Props {
   hasTrial: boolean
   trialDays: number
+  priceString: string
+  periodLabel: string
   purchasing: boolean
   onSubscribe: () => void
   onRestore: () => void
 }
 
 /** Trial badge + subscribe CTA + restore link + billing fine print. */
-export default function PaywallActions({ hasTrial, trialDays, purchasing, onSubscribe, onRestore }: Props) {
+export default function PaywallActions({ hasTrial, trialDays, priceString, periodLabel, purchasing, onSubscribe, onRestore }: Props) {
   return (
     <>
       {hasTrial ? (
@@ -44,9 +47,26 @@ export default function PaywallActions({ hasTrial, trialDays, purchasing, onSubs
       <Text onPress={onRestore} className="mt-4 text-center text-[14px] text-[#6B7280]">
         Restore Purchases
       </Text>
-      <Text className="mx-8 mt-3 text-center text-[11px] text-[#9CA3AF]">
-        Recurring billing. Cancel anytime in App Store settings. Payment charged to your Apple ID.
+      <Text className="mx-8 mt-3 text-center text-[11px] leading-4 text-[#9CA3AF]">
+        {hasTrial ? `${trialDays}-day free trial, then ` : ''}{priceString}/{periodLabel} — auto-renews until
+        cancelled. Cancel anytime in App Store settings. Payment is charged to your Apple ID.
       </Text>
+
+      <View className="mt-2 flex-row items-center justify-center">
+        <Text
+          onPress={() => INFO.terms.fullUrl && Linking.openURL(INFO.terms.fullUrl)}
+          className="px-2 text-[11px] font-semibold text-[#6C47D9]"
+        >
+          Terms of Use
+        </Text>
+        <Text className="text-[11px] text-[#9CA3AF]">·</Text>
+        <Text
+          onPress={() => INFO.privacy.fullUrl && Linking.openURL(INFO.privacy.fullUrl)}
+          className="px-2 text-[11px] font-semibold text-[#6C47D9]"
+        >
+          Privacy Policy
+        </Text>
+      </View>
     </>
   )
 }
