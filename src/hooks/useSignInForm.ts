@@ -37,12 +37,13 @@ export function useSignInForm() {
     setLoading(false)
 
     if (error) {
-      // Supabase returns this when the account exists but the email is unconfirmed.
+      // Supabase returns this when the account exists but the email is unconfirmed
+      // (including a freshly changed address that hasn't been verified yet).
       if (error.code === 'email_not_confirmed' || /not confirmed/i.test(error.message)) {
-        setApiError('Please verify your email first. Check your inbox for our verification link.')
+        setApiError('Please verify your email first — tap the link in your inbox. If you changed your email, sign in with the new address and your existing password.')
         return
       }
-      setApiError('Invalid email or password. Please try again.')
+      setApiError('Invalid email or password. If you recently changed your email, use the new address (your password stays the same).')
       return
     }
 

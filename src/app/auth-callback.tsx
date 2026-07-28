@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar'
 import { router, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useProfileStore } from '@/store/profileStore'
+import { useAuthStore } from '@/store/authStore'
 
 const logo = require('../../assets/logo.png')
 
@@ -82,6 +83,9 @@ export default function AuthCallback() {
       // (and name) show immediately, then enter the app.
       const uid = (await supabase.auth.getUser()).data.user?.id
       if (uid) await useProfileStore.getState().fetchProfile(uid)
+      // Signal the (possibly still-mounted) email-change sheet to auto-dismiss so
+      // it doesn't linger over Home after confirmation.
+      if (flow === 'email-changed') useAuthStore.setState({ emailChangedAt: Date.now() })
       router.replace('/(tabs)')
     })()
   }, [flow, u])

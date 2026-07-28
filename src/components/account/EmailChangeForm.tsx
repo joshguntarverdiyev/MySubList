@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/authStore'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -20,6 +21,19 @@ export default function EmailChangeForm({ visible, currentEmail, onClose }: Prop
   const [sentTo, setSentTo] = useState<string | null>(null)
 
   const close = () => { setEmail(''); setError(''); setSentTo(null); onClose() }
+
+  // When the email change is confirmed via the deep link, auth-callback bumps
+  // emailChangedAt. Auto-dismiss this sheet so it doesn't float over Home if the
+  // user confirmed from their inbox instead of tapping Done. The ref skips the
+  // initial mount so we only react to a genuine change.
+  const emailChangedAt = useAuthStore((s) => s.emailChangedAt)
+  const lastSeen = useRef(emailChangedAt)
+  useEffect(() => {
+    if (emailChangedAt !== lastSeen.current) {
+      lastSeen.current = emailChangedAt
+      close()
+    }
+  }, [emailChangedAt])
 
   async function handleSubmit() {
     setError('')

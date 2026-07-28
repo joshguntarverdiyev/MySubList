@@ -9,3 +9,26 @@ entrypoint = "./functions/ai-advisor/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/ai-advisor/*.html" ]
+
+# Custom auth email templates (branded HTML in ./supabase/templates).
+# NOTE: These apply to LOCAL dev (`supabase start`). The hosted project reads
+# templates from Dashboard -> Authentication -> Email Templates (see templates/README.md).
+[auth.email.template.confirmation]
+subject = "Confirm your email"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email"
+content_path = "./supabase/templates/email-change.html"
+
+[auth.email.template.magic_link]
+subject = "Your MySubList sign-in link"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.invite]
+subject = "You're invited to MySubList"
+content_path = "./supabase/templates/invite.html"
