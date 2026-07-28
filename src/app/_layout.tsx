@@ -42,12 +42,20 @@ export default function RootLayout() {
   // session so a signed-in user lands on the tabs instead of the sign-in screen.
   useEffect(() => {
     (async () => {
-      const onboarded = await SecureStore.getItemAsync('onboarding_complete');
-      if (onboarded !== 'true') {
-        router.replace('/(onboarding)/welcome');
-      } else {
-        const { data } = await supabase.auth.getSession();
-        router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in'));
+      // If launched from a Supabase auth deep link, let /auth-callback own the
+      // routing — it finishes the token exchange. Routing here on getSession()
+      // would race it and dump a just-confirmed user on sign-in.
+      const initialUrl = await Linking.getInitialURL();
+      const isAuthLink = !!initialUrl && /reset-password|confirmed|email-changed/.test(initialUrl);
+
+      if (!isAuthLink) {
+        const onboarded = await SecureStore.getItemAsync('onboarding_complete');
+        if (onboarded !== 'true') {
+          router.replace('/(onboarding)/welcome');
+        } else {
+          const { data } = await supabase.auth.getSession();
+          router.replace((data.session ? '/(tabs)' : '/(auth)/sign-in'));
+        }
       }
       setReady(true);
       await SplashScreen.hideAsync().catch(() => {});
@@ -56,7 +64,7 @@ export default function RootLayout() {
 
   // Send the user back to sign-in on sign-out / account deletion / failed token
   // refresh. (SIGNED_IN is intentionally not handled here — the auth screens and
-  // deep-link handler route those, to avoid overriding e.g. password reset.)
+  // /auth-callback route those, to avoid overriding e.g. password reset.)
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') router.replace('/(auth)/sign-in');
@@ -73,38 +81,9 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
-  // Handle Supabase auth deep links: password reset (mysublist://reset-password)
-  // and email confirmation (mysublist://confirmed). Both carry the session
-  // tokens in the URL hash fragment; we set the session manually (detectSessionInUrl
-  // is off for native) then route to the right place.
-  useEffect(() => {
-    const handleDeepLink = async (url: string) => {
-      const isReset = url.includes('reset-password');
-      const isConfirm = url.includes('confirmed');
-      if (!isReset && !isConfirm) return;
-
-      const fragment = url.split('#')[1] || url.split('?')[1] || '';
-      const params = new URLSearchParams(fragment);
-      const access_token = params.get('access_token');
-      const refresh_token = params.get('refresh_token');
-      if (!access_token || !refresh_token) return;
-
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) return;
-      router.replace((isReset ? '/(auth)/reset-password' : '/(tabs)'));
-    };
-
-    (async () => {
-      const url = await Linking.getInitialURL();
-      if (url) handleDeepLink(url);
-    })();
-
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      handleDeepLink(url);
-    });
-
-    return () => subscription.remove();
-  }, []);
+  // NB: Supabase auth deep links (confirm / reset / email-change) are handled by
+  // src/app/+native-intent.tsx, which rewrites them to /auth-callback. That screen
+  // owns the token exchange + onward routing, so there's no Unmatched Route flash.
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

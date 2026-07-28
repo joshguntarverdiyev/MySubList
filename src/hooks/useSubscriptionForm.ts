@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { router } from 'expo-router'
-import { format, parseISO } from 'date-fns'
+import { endOfDay, format, parseISO } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { BillingPeriod } from '@/constants/subscriptionOptions'
 import type { Subscription } from '@/types/subscription'
@@ -12,6 +12,7 @@ interface FormErrors {
   name?: string
   price?: string
   date?: string
+  trialDate?: string
 }
 
 interface UseSubscriptionFormOptions {
@@ -35,15 +36,29 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
   const [period, setPeriod] = useState<BillingPeriod>(subscription?.billing_period ?? 'monthly')
   const [method, setMethod] = useState<string | null>(subscription?.payment_method ?? null)
   const [freeTrial, setFreeTrial] = useState(subscription?.is_free_trial ?? false)
+  const [trialEndDate, setTrialEndDate] = useState<Date | null>(
+    subscription?.trial_end_date ? parseISO(subscription.trial_end_date) : null
+  )
   const [errors, setErrors] = useState<FormErrors>({})
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Toggling the trial off clears its end date so we never persist a stale value.
+  const handleFreeTrial = (on: boolean) => {
+    setFreeTrial(on)
+    if (!on) setTrialEndDate(null)
+  }
 
   const submit = async () => {
     const next: FormErrors = {}
     if (!name.trim()) next.name = 'Name is required'
     if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) next.price = 'Enter a valid price'
     if (!startDate) next.date = 'Start date is required'
+    // A start date can't be in the future (end-of-today so "today" always passes).
+    else if (startDate > endOfDay(new Date())) next.date = 'Start date cannot be in the future'
+    if (freeTrial && !trialEndDate) next.trialDate = 'Please enter your trial end date'
+    else if (freeTrial && trialEndDate && startDate && trialEndDate <= startDate)
+      next.trialDate = 'Trial end date must be after the start date'
     setErrors(next)
     if (Object.keys(next).length > 0) return
 
@@ -66,6 +81,7 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
       next_renewal_date: initialRenewalDate(startDate!, period),
       payment_method: method,
       is_free_trial: freeTrial,
+      trial_end_date: freeTrial && trialEndDate ? format(trialEndDate, 'yyyy-MM-dd') : null,
     }
 
     if (isEdit) {
@@ -79,16 +95,12 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
         setApiError('Could not save changes. Please try again.')
         return
       }
-      // Reschedule the reminder with the updated dates/price, carrying the old
-      // notification_id so the previous reminder is cancelled first.
-      const updatedSub = { ...subscription!, ...fields }
-      const notifId = await rescheduleRenewalReminder(updatedSub)
+      // Reschedule the reminder with updated dates/price (carries old id to cancel).
+      const notifId = await rescheduleRenewalReminder({ ...subscription!, ...fields })
       if (notifId !== subscription!.notification_id) {
-        await supabase
-          .from('subscriptions')
+        await supabase.from('subscriptions')
           .update({ notification_id: notifId })
-          .eq('id', subscription!.id)
-          .eq('user_id', user.id)
+          .eq('id', subscription!.id).eq('user_id', user.id)
       }
       setLoading(false)
       await useSubscriptionStore.getState().refreshSubscriptions(user.id)
@@ -99,18 +111,12 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
 
     const { data: inserted, error } = await supabase
       .from('subscriptions')
-      .insert({
-        ...fields,
-        user_id: user.id,
-        brand_key: brandKey || null,
-        is_active: true,
-      })
+      .insert({ ...fields, user_id: user.id, brand_key: brandKey || null, is_active: true })
       .select('*')
       .single()
     if (error || !inserted) {
       setLoading(false)
-      // Server-side free-tier guard (DB trigger) rejected the 6th subscription —
-      // send the user to the paywall instead of a generic error.
+      // Server-side free-tier guard rejected the 6th sub — route to the paywall.
       if (error?.message?.includes('free-subscription-limit-reached')) {
         router.push('/paywall')
         return
@@ -119,27 +125,23 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
       return
     }
 
-    // Request permission in context (if not yet decided) and schedule the reminder.
     const newSub = inserted as Subscription
     const notifId = await scheduleNewSubscriptionReminder(newSub)
     if (notifId) {
-      await supabase
-        .from('subscriptions')
+      await supabase.from('subscriptions')
         .update({ notification_id: notifId })
-        .eq('id', newSub.id)
-        .eq('user_id', user.id)
+        .eq('id', newSub.id).eq('user_id', user.id)
     }
-
     setLoading(false)
-    // Dismiss the modal stack (new + add) to reveal the existing Home tab underneath,
-    // instead of pushing a brand-new Home inside the modal presentation.
+    // Dismiss the modal stack (new + add) to reveal the Home tab underneath.
     router.dismissAll()
   }
 
   return {
     name, setName, plan, setPlan, startDate, setStartDate,
     price, setPrice, currency, setCurrency, period, setPeriod,
-    method, setMethod, freeTrial, setFreeTrial,
+    method, setMethod, freeTrial, setFreeTrial: handleFreeTrial,
+    trialEndDate, setTrialEndDate,
     errors, apiError, loading, submit,
   }
 }

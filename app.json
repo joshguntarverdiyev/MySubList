@@ -24,7 +24,7 @@
         {
           "backgroundColor": "#7C4DFF",
           "image": "./assets/logo.png",
-          "imageWidth": 240,
+          "imageWidth": 204,
           "resizeMode": "contain"
         }
       ],

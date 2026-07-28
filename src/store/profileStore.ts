@@ -45,17 +45,30 @@ export const useProfileStore = create<ProfileState>((set) => ({
       supabase.auth.getUser(),
     ])
     const email = userData.user?.email ?? ''
+    // The real name the user typed at sign-up lives in auth user_metadata. The
+    // DB trigger that creates the profiles row can default full_name to the email
+    // prefix, so prefer metadata whenever the stored name is blank or matches the
+    // email prefix, and backfill the profiles row so it self-heals.
+    const metaName = (userData.user?.user_metadata?.full_name as string | undefined)?.trim() ?? ''
     // Fall back to defaults on any error or missing row — never block the UI.
     if (error || !data) {
-      set({ email, loaded: true })
+      set({ email, full_name: metaName, loaded: true })
       return
     }
     // NB: is_premium is intentionally NOT set here. The client's premium flag is
     // owned by RevenueCat (see configureRevenueCat) so the webhook/DB lag can't
     // clobber the UI after a purchase. The DB is_premium is for server-side
     // enforcement only (AI limit, sub-limit trigger).
+    const storedName = (data.full_name ?? '').trim()
+    const emailPrefix = email.split('@')[0]
+    const nameLooksAuto = !storedName || storedName === emailPrefix
+    const full_name = nameLooksAuto && metaName ? metaName : storedName
+    // Persist the corrected name so the DB matches the UI and future reads are clean.
+    if (full_name && full_name !== storedName) {
+      await supabase.from('profiles').update({ full_name }).eq('id', userId)
+    }
     set({
-      full_name: data.full_name ?? '',
+      full_name,
       email,
       avatar_url: data.avatar_url ?? null,
       currency: data.currency ?? 'EUR',

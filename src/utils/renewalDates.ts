@@ -9,11 +9,9 @@ import type { BillingPeriod } from '@/constants/subscriptionOptions'
 const MAX_ADVANCE = 6000
 
 /**
- * Compute the next renewal date ON OR AFTER today from a start date +
- * billing period. Pure, no side effects, never mutates the input.
- * - "once": returns the start date as-is (no recurring renewal).
- * - start already >= today: returns start (first payment hasn't happened yet).
- * - otherwise: advances by one period until the date >= startOfDay(today).
+ * Next renewal date ON OR AFTER today from a start date + billing period (pure).
+ * "once" or start >= today returns start as-is; otherwise advances one period at
+ * a time until >= startOfDay(today).
  */
 export function computeNextRenewalDate(
   startDate: Date | string,
@@ -22,7 +20,6 @@ export function computeNextRenewalDate(
 ): Date {
   const start = typeof startDate === 'string' ? parseISO(startDate) : startDate
   if (billingPeriod === 'once') return start
-
   const floor = startOfDay(today)
   if (!isBefore(start, floor)) return start
 
@@ -46,7 +43,10 @@ export function computeNextRenewalDate(
  */
 export function nextRenewalIso(sub: Subscription, today: Date = new Date()): string | null {
   if (sub.billing_period === 'once') return sub.next_renewal_date
-  return format(computeNextRenewalDate(sub.start_date, sub.billing_period, today), 'yyyy-MM-dd')
+  // Free trials bill from trial_end_date, not start_date: during the trial the
+  // next payment is the trial end date; after it, billing advances from there.
+  const base = sub.is_free_trial && sub.trial_end_date ? sub.trial_end_date : sub.start_date
+  return format(computeNextRenewalDate(base, sub.billing_period, today), 'yyyy-MM-dd')
 }
 
 /** Dot categories used for coloring renewal occurrences on the grid. */

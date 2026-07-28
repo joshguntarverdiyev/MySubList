@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Alert, ActionSheetIOS, Platform } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
-import * as ImageManipulator from 'expo-image-manipulator'
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator'
 import { supabase } from '@/lib/supabase'
 import { useProfileStore } from '@/store/profileStore'
 
@@ -20,12 +20,16 @@ export function useAvatarUpload(userId: string | null) {
       if (!userId) return
       setUploading(true)
       try {
-        // Resize the (already square-cropped) image to 300×300 and compress.
-        const manipulated = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 300, height: 300 } }],
-          { compress: 0.8, format: ImageManipulator.SaveFormat.PNG, base64: true },
-        )
+        // Resize the (already square-cropped) image to 300×300 and compress, using
+        // the SDK 57 contextual API (manipulateAsync is deprecated).
+        const rendered = await ImageManipulator.manipulate(uri)
+          .resize({ width: 300, height: 300 })
+          .renderAsync()
+        const manipulated = await rendered.saveAsync({
+          compress: 0.8,
+          format: SaveFormat.PNG,
+          base64: true,
+        })
         if (!manipulated.base64) throw new Error('Failed to process image')
 
         const bytes = decodeBase64(manipulated.base64)
@@ -48,7 +52,10 @@ export function useAvatarUpload(userId: string | null) {
 
         setAvatarUrl(publicUrl)
       } catch (err) {
-        Alert.alert('Upload failed', 'Could not update your photo. Please try again.')
+        // Surface the underlying reason — TestFlight builds have __DEV__ off, so
+        // the console warn alone is invisible while we diagnose bucket/RLS setup.
+        const reason = err instanceof Error ? err.message : String(err)
+        Alert.alert('Upload failed', `Could not update your photo.\n\n${reason}`)
         console.warn('Avatar upload error', err)
       } finally {
         setUploading(false)

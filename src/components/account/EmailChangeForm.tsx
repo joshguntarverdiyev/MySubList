@@ -28,7 +28,10 @@ export default function EmailChangeForm({ visible, currentEmail, onClose }: Prop
     setLoading(true)
     // Supabase sends a verification link to the NEW address; the change only
     // takes effect once the user taps it.
-    const { error: err } = await supabase.auth.updateUser({ email: next })
+    const { error: err } = await supabase.auth.updateUser(
+      { email: next },
+      { emailRedirectTo: 'mysublist://email-changed' },
+    )
     setLoading(false)
     if (err) {
       const m = err.message.toLowerCase()

@@ -1,6 +1,8 @@
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, router } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { isFuture, parseISO } from 'date-fns'
 import { useSubscription } from '@/hooks/useSubscription'
 import { formatLongDate } from '@/utils/subscriptionStats'
 import DetailHeader from '@/components/subscription/DetailHeader'
@@ -37,6 +39,9 @@ export default function SubscriptionDetails() {
     )
   }
 
+  // "In trial" = a free trial whose end date is still in the future.
+  const inTrial = sub.is_free_trial && !!sub.trial_end_date && isFuture(parseISO(sub.trial_end_date))
+
   const rows = [
     { icon: 'refresh-outline' as const, label: 'Billing Cycle', value: CAPS[sub.billing_period] },
     { icon: 'calendar-outline' as const, label: 'Started Date', value: formatLongDate(sub.start_date) },
@@ -44,6 +49,9 @@ export default function SubscriptionDetails() {
     { icon: 'document-text-outline' as const, label: 'Plan', value: sub.plan_name ?? '—' },
     { icon: 'cash-outline' as const, label: 'Currency', value: sub.currency },
     { icon: 'time-outline' as const, label: 'Free Trial', value: sub.is_free_trial ? 'Yes' : 'No' },
+    ...(sub.is_free_trial && sub.trial_end_date
+      ? [{ icon: 'hourglass-outline' as const, label: 'Trial Ends', value: formatLongDate(sub.trial_end_date) }]
+      : []),
   ]
 
   return (
@@ -54,6 +62,15 @@ export default function SubscriptionDetails() {
       >
         <DetailHeader onDelete={deleteSubscription} onEdit={() => router.push(`/subscription/edit/${id}`)} />
         <ServiceSummaryCard sub={sub} />
+
+        {inTrial ? (
+          <View className="flex-row items-center self-start mx-6 mt-4 rounded-full bg-[#FEF3E2] px-3 py-1.5">
+            <Ionicons name="time-outline" size={14} color="#F59E0B" />
+            <Text className="ml-1.5 text-[13px] font-semibold text-[#B45309]">
+              In trial · ends {formatLongDate(sub.trial_end_date)}
+            </Text>
+          </View>
+        ) : null}
 
         <View
           className="bg-white rounded-2xl mx-6 mt-4 py-1"

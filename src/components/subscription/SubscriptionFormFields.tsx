@@ -1,5 +1,6 @@
 import { View, Text, TextInput, Switch } from 'react-native'
 import { router } from 'expo-router'
+import { addDays, addYears } from 'date-fns'
 import { CURRENCIES, FREE_CURRENCIES, PAYMENT_METHODS, isCurrencyLocked } from '@/constants/subscriptionOptions'
 import { useProfileStore } from '@/store/profileStore'
 import type { useSubscriptionForm } from '@/hooks/useSubscriptionForm'
@@ -15,6 +16,7 @@ interface SubscriptionFormFieldsProps {
 export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProps) {
   const isPremium = useProfileStore((s) => s.is_premium)
   const lockedCurrencies = isPremium ? [] : CURRENCIES.filter((c) => !FREE_CURRENCIES.includes(c))
+  const today = new Date()
   return (
     <View className="bg-white rounded-2xl mx-6 p-5 gap-y-5" style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 28, elevation: 4 }}>
       {f.apiError ? <Text className="text-[13px] text-[#EF4444]">{f.apiError}</Text> : null}
@@ -22,7 +24,7 @@ export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProp
       <LabeledInput label="Name" value={f.name} onChangeText={f.setName} placeholder="Enter subscription name" error={f.errors.name} />
       <LabeledInput label="Plan (Optional)" value={f.plan} onChangeText={f.setPlan} placeholder="Enter plan name" />
 
-      <DateField value={f.startDate} onChange={f.setStartDate} error={f.errors.date} />
+      <DateField value={f.startDate} onChange={f.setStartDate} error={f.errors.date} maximumDate={today} />
 
       {/* Price + Currency */}
       <View className="flex-row justify-between">
@@ -58,6 +60,18 @@ export default function SubscriptionFormFields({ f }: SubscriptionFormFieldsProp
         </View>
         <Switch value={f.freeTrial} onValueChange={f.setFreeTrial} trackColor={{ false: '#E5E7EB', true: '#7C4DFF' }} thumbColor="#FFFFFF" />
       </View>
+
+      {f.freeTrial ? (
+        <DateField
+          label="Trial ends on"
+          placeholder="Select trial end date"
+          value={f.trialEndDate}
+          onChange={f.setTrialEndDate}
+          error={f.errors.trialDate}
+          minimumDate={addDays(today, 1)}
+          maximumDate={addYears(today, 2)}
+        />
+      ) : null}
     </View>
   )
 }
