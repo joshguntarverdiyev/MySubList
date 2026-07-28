@@ -55,6 +55,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.joshguntarverdiyev.MySubList",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
