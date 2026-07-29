@@ -21,6 +21,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // Show reminders as a banner even if the app is foregrounded when one fires.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    shouldShowAlert: true,
     shouldShowBanner: true,
     shouldShowList: true,
     shouldPlaySound: false,

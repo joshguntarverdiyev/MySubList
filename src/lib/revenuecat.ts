@@ -34,13 +34,28 @@ function syncPremium(info: CustomerInfo) {
  * account across devices. Safe to call repeatedly — it configures only once.
  */
 export async function configureRevenueCat(userId: string) {
-  if (configured || Platform.OS !== 'ios' || !IOS_KEY || IN_EXPO_GO) return
-  configured = true
-  if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.DEBUG)
-  Purchases.configure({ apiKey: IOS_KEY, appUserID: userId })
-  // Keep is_premium in sync with real entitlements: once now, then on every
-  // change (purchase, restore, expiry) — no dependence on the webhook/DB lag.
-  Purchases.addCustomerInfoUpdateListener(syncPremium)
+  if (Platform.OS !== 'ios' || !IOS_KEY || IN_EXPO_GO) return
+
+  if (!configured) {
+    configured = true
+    if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.DEBUG)
+    Purchases.configure({ apiKey: IOS_KEY, appUserID: userId })
+    // Keep is_premium in sync with real entitlements on every change (purchase,
+    // restore, expiry) — no dependence on the webhook/DB lag.
+    Purchases.addCustomerInfoUpdateListener(syncPremium)
+  } else {
+    // Already configured this process — re-login so entitlements resolve for the
+    // current account (covers a sign-out/sign-in, incl. after an email change).
+    try {
+      await Purchases.logIn(userId)
+    } catch (e) {
+      if (__DEV__) console.log('RC logIn error:', e)
+    }
+  }
+
+  // Always re-sync premium from the current entitlements. On a re-login the store
+  // was reset to free and no CustomerInfo change fires the listener, so without
+  // this a Pro user would wrongly show as Free.
   try {
     syncPremium(await Purchases.getCustomerInfo())
   } catch (e) {
