@@ -29,12 +29,14 @@ templates can't import partials):
 Each file references the header logo as:
 
 ```html
-<img src="https://mysublist.app/logo.png" width="48" height="48" alt="MySubList" ... />
+<img src="https://mysublist.app/app-icon.png" width="56" height="56" alt="MySubList" ... />
 ```
 
-Replace that URL with a **public HTTPS** PNG (~96×96 for retina). Easiest option:
-upload `assets/logo.png` to a public Supabase Storage bucket and use its public
-URL. Find & replace `https://mysublist.app/logo.png` in all five files.
+Use the **app icon** (`assets/icon.png`) — its purple rounded tile reads well on
+the white card, unlike the transparent droplet logo which disappears. Replace the
+URL with a **public HTTPS** PNG (~112×112 for retina). Easiest option: upload
+`assets/icon.png` to a public Supabase Storage bucket and use its public URL.
+Find & replace `https://mysublist.app/app-icon.png` in all five files.
 
 > Tip: also update the `https://mysublist.app/privacy` and `/terms` footer links
 > and `support@mysublist.app` if those differ.

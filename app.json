@@ -56,8 +56,10 @@
     "ios": {
       "bundleIdentifier": "com.joshguntarverdiyev.MySubList",
       "buildNumber": "1",
+      "icon": "./assets/icon-ios.png",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["message", "googlegmail", "ms-outlook", "ymail"]
       }
     },
     "extra": {

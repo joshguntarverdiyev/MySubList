@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { openMailApp } from '@/utils/openMailApp'
 
 export default function VerifyEmailScreen() {
   const insets = useSafeAreaInsets()
@@ -11,17 +12,6 @@ export default function VerifyEmailScreen() {
 
   const [resending, setResending] = useState(false)
   const [notice, setNotice] = useState('')
-
-  // iOS opens Apple Mail via the message:// scheme. If no mail app handles it,
-  // fall back to mailto: which triggers the system mail chooser.
-  async function handleOpenEmail() {
-    try {
-      const supported = await Linking.canOpenURL('message://')
-      await Linking.openURL(supported ? 'message://' : 'mailto:')
-    } catch {
-      // No mail app available — nothing more we can do.
-    }
-  }
 
   async function handleResend() {
     if (!email) return
@@ -67,7 +57,7 @@ export default function VerifyEmailScreen() {
         <TouchableOpacity
           className="h-14 w-full rounded-full bg-[#7C4DFF] items-center justify-center mt-4"
           style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 8 }}
-          onPress={handleOpenEmail}
+          onPress={() => openMailApp()}
           activeOpacity={0.85}
         >
           <Text className="text-white text-base font-semibold">Open Email App</Text>

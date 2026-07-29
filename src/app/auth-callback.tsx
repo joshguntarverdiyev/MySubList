@@ -86,6 +86,10 @@ export default function AuthCallback() {
       // Signal the (possibly still-mounted) email-change sheet to auto-dismiss so
       // it doesn't linger over Home after confirmation.
       if (flow === 'email-changed') useAuthStore.setState({ emailChangedAt: Date.now() })
+      // Clear the whole stack so the sign-up verify-email screen (left underneath
+      // by the confirm flow) can't resurface later via back/dismissAll. dismissAll
+      // pops down to the root screen, then replace swaps that root for the tabs.
+      if (router.canDismiss()) router.dismissAll()
       router.replace('/(tabs)')
     })()
   }, [flow, u])

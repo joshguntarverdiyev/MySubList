@@ -133,8 +133,10 @@ export function useSubscriptionForm(options: UseSubscriptionFormOptions = {}) {
         .eq('id', newSub.id).eq('user_id', user.id)
     }
     setLoading(false)
-    // Dismiss the modal stack (new + add) to reveal the Home tab underneath.
-    router.dismissAll()
+    // Dismiss the modal stack (new + add) back to the Home tab. dismissTo targets
+    // tabs specifically so it can't overshoot Home down to a stale root screen
+    // (e.g. a leftover sign-up verify-email) the way dismissAll would.
+    router.dismissTo('/(tabs)')
   }
 
   return {
