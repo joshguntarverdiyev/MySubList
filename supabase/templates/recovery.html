@@ -16,7 +16,7 @@
       .card { padding:28px 22px !important; }
       .gutter { padding-left:22px !important; padding-right:22px !important; }
       .h1 { font-size:24px !important; }
-      .btn { display:block !important; width:100% !important; box-sizing:border-box; }
+      .btn-wrap { width:100% !important; }
     }
   </style>
 </head>
@@ -51,7 +51,11 @@
                 </v:roundrect>
                 <![endif]-->
                 <!--[if !mso]><!-- -->
-                <a href="{{ .ConfirmationURL }}" class="btn" style="background:#7C4DFF;color:#FFFFFF;display:inline-block;font-size:16px;font-weight:600;line-height:20px;padding:14px 32px;border-radius:12px;text-align:center;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Reset Password</a>
+                <table role="presentation" class="btn-wrap" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
+                  <td class="btn" align="center" bgcolor="#7C4DFF" style="border-radius:12px;padding:15px 34px;">
+                    <a href="{{ .ConfirmationURL }}" style="display:block;font-size:16px;line-height:18px;font-weight:600;color:#FFFFFF;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;white-space:nowrap;">Reset Password</a>
+                  </td>
+                </tr></table>
                 <!--<![endif]-->
               </td></tr></table>
 
