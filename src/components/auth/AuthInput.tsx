@@ -1,5 +1,5 @@
-import { ComponentProps } from 'react'
-import { View, Text, TextInput, KeyboardTypeOptions } from 'react-native'
+import { ComponentProps, useState } from 'react'
+import { View, Text, TextInput, TouchableOpacity, KeyboardTypeOptions } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
 interface Props {
@@ -20,6 +20,8 @@ export default function AuthInput({
   label, icon, value, onChangeText, placeholder, error,
   secureTextEntry, keyboardType, autoCapitalize, autoCorrect,
 }: Props) {
+  // Independent per-instance show/hide state so each password field toggles alone.
+  const [show, setShow] = useState(false)
   return (
     <View>
       <Text className="text-sm font-semibold text-[#1A1A2E] mb-1.5">{label}</Text>
@@ -35,11 +37,20 @@ export default function AuthInput({
           placeholderTextColor="#9CA3AF"
           value={value}
           onChangeText={onChangeText}
-          secureTextEntry={secureTextEntry}
+          secureTextEntry={secureTextEntry && !show}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
         />
+        {secureTextEntry ? (
+          <TouchableOpacity
+            onPress={() => setShow((s) => !s)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="ml-2"
+          >
+            <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={22} color="#9CA3AF" />
+          </TouchableOpacity>
+        ) : null}
       </View>
       {error ? <Text className="text-xs text-[#EF4444] mt-1">{error}</Text> : null}
     </View>
