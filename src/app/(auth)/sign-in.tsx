@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
 import { Link } from 'expo-router'
@@ -14,19 +14,21 @@ export default function SignInScreen() {
   const [forgotOpen, setForgotOpen] = useState(false)
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: '#F0EBFF' }}
-      contentContainerStyle={{
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingTop: insets.top + 32,
-        paddingBottom: insets.bottom + 24,
-        paddingHorizontal: 24,
-      }}
-      keyboardShouldPersistTaps="handled"
-      automaticallyAdjustKeyboardInsets
-      showsVerticalScrollIndicator={false}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          paddingTop: insets.top + 32,
+          paddingBottom: insets.bottom + 24,
+          paddingHorizontal: 24,
+        }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View className="gap-y-8">
         {/* Logo + heading */}
         <View>
@@ -105,7 +107,8 @@ export default function SignInScreen() {
         </View>
       </View>
 
-      <PasswordResetSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} title="Forgot Password" />
-    </ScrollView>
+        <PasswordResetSheet visible={forgotOpen} onClose={() => setForgotOpen(false)} title="Forgot Password" />
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }

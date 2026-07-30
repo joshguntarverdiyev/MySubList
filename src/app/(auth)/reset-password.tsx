@@ -20,6 +20,9 @@ export default function ResetPasswordScreen() {
   // reset link before routing here, so a legitimate arrival always has one.
   const [hasSession, setHasSession] = useState<boolean | null>(null)
 
+  // The password-entry form (vs. the loading / invalid-link / success states).
+  const showForm = hasSession === true && !done
+
   useEffect(() => {
     ;(async () => {
       const { data } = await supabase.auth.getSession()
@@ -67,7 +70,10 @@ export default function ResetPasswordScreen() {
       <View
         style={{
           flex: 1,
-          justifyContent: 'center',
+          // Top-align the form so it doesn't float with a large gap above the
+          // keyboard; keep the transient states (loading/invalid/done) centered.
+          justifyContent: showForm ? 'flex-start' : 'center',
+          paddingTop: showForm ? insets.top + 24 : 0,
           paddingBottom: insets.bottom + 32,
           paddingHorizontal: 24,
         }}
