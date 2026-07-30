@@ -67,7 +67,9 @@ export async function scheduleRenewalReminder(
 
   return Notifications.scheduleNotificationAsync({
     content: {
-      title: sub.name,
+      // Generic title (the service name lives in the body) so the reminder reads
+      // "Upcoming payment / Netflix renews after 2 days — €12.99".
+      title: 'Upcoming payment',
       body: `${sub.name} renews after ${daysBefore} ${dayLabel} — ${price}`,
       data: { subscriptionId: sub.id },
     },

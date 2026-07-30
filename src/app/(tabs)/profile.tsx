@@ -12,7 +12,6 @@ import SettingsRow from '@/components/profile/SettingsRow'
 import InfoModal from '@/components/profile/InfoModal'
 import DangerZone from '@/components/profile/DangerZone'
 import { INFO } from '@/constants/legal'
-import { sendTestReminder } from '@/services/testNotification' // TEMP: remove after build 7
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
@@ -24,17 +23,6 @@ export default function ProfileScreen() {
 
   // Real name, falling back to the email's username, then a generic label.
   const displayName = s.full_name || s.email?.split('@')[0] || 'User'
-
-  // TEMP (build 7): verify the renewal-reminder pipeline. Remove after testing.
-  const handleTestReminder = async () => {
-    const r = await sendTestReminder()
-    Alert.alert(
-      r === 'scheduled' ? 'Test reminder scheduled' : 'Notifications are off',
-      r === 'scheduled'
-        ? 'Background the app — it will fire in ~10 seconds. Tap it to confirm it opens Home.'
-        : 'Enable notifications for MySubList in Settings, then try again.',
-    )
-  }
 
   useFocusEffect(
     useCallback(() => {
@@ -93,14 +81,6 @@ export default function ProfileScreen() {
         </SettingsCard>
 
         <DangerZone />
-
-        {/* TEMPORARY — remove after build 7 notification testing */}
-        <Pressable
-          onPress={handleTestReminder}
-          className="mt-4 flex-row items-center justify-center rounded-2xl border border-[#DAD5E8] bg-white px-4 py-4"
-        >
-          <Text className="text-[14px] font-semibold text-[#7C4DFF]">🔔 Send test reminder (10s)</Text>
-        </Pressable>
       </ScrollView>
 
       <InfoModal
