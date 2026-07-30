@@ -13,12 +13,13 @@ interface Props {
   keyboardType?: KeyboardTypeOptions
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
   autoCorrect?: boolean
+  autoFocus?: boolean
 }
 
 /** Labeled auth text field: icon + bordered input + error message. */
 export default function AuthInput({
   label, icon, value, onChangeText, placeholder, error,
-  secureTextEntry, keyboardType, autoCapitalize, autoCorrect,
+  secureTextEntry, keyboardType, autoCapitalize, autoCorrect, autoFocus,
 }: Props) {
   // Independent per-instance show/hide state so each password field toggles alone.
   const [show, setShow] = useState(false)
@@ -41,6 +42,7 @@ export default function AuthInput({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
+          autoFocus={autoFocus}
         />
         {secureTextEntry ? (
           <TouchableOpacity
