@@ -16,7 +16,6 @@
       .card { padding:28px 22px !important; }
       .gutter { padding-left:22px !important; padding-right:22px !important; }
       .h1 { font-size:24px !important; }
-      .btn-wrap { width:100% !important; }
     }
   </style>
 </head>
@@ -46,14 +45,14 @@
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
                 <!--[if mso]>
-                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="26%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:52px;v-text-anchor:middle;width:480px;" arcsize="24%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
                 <w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:600;">Sign In</center>
                 </v:roundrect>
                 <![endif]-->
                 <!--[if !mso]><!-- -->
-                <table role="presentation" class="btn-wrap" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
-                  <td class="btn" align="center" bgcolor="#7C4DFF" style="border-radius:12px;padding:15px 34px;">
-                    <a href="{{ .ConfirmationURL }}" style="display:block;font-size:16px;line-height:18px;font-weight:600;color:#FFFFFF;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;white-space:nowrap;">Sign In</a>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td class="btn" align="center" bgcolor="#7C4DFF" style="border-radius:12px;">
+                    <a href="{{ .ConfirmationURL }}" style="display:block;height:52px;line-height:52px;font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;text-align:center;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Sign In</a>
                   </td>
                 </tr></table>
                 <!--<![endif]-->

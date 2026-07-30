@@ -467,10 +467,13 @@ Deno.serve(async (req) => {
     reply = reply.slice(0, MAX_REPLY_LENGTH) + "...";
   }
 
-  // Persist user message + AI response.
+  // Persist user message + AI response. A batch insert gives both rows the same
+  // transaction timestamp from now(), so set created_at explicitly (user first,
+  // assistant +1s) to keep them strictly ordered when reloaded.
+  const nowMs = Date.now();
   const { error: insertError } = await supabase.from("ai_messages").insert([
-    { user_id: user.id, role: "user", content: message },
-    { user_id: user.id, role: "assistant", content: reply },
+    { user_id: user.id, role: "user", content: message, created_at: new Date(nowMs).toISOString() },
+    { user_id: user.id, role: "assistant", content: reply, created_at: new Date(nowMs + 1000).toISOString() },
   ]);
 
   if (insertError) {

@@ -32,7 +32,15 @@ export async function loadRecentMessages(userId: string): Promise<ChatMessage[]>
     .limit(HISTORY_LIMIT)
 
   if (error) throw error
-  return (data ?? []).reverse() as ChatMessage[]
+  const rows = (data ?? []) as ChatMessage[]
+  // Display oldest-first. Tie-break equal timestamps so the user's message always
+  // precedes the AI reply (legacy rows were batch-inserted with the same now()).
+  // NB: 'assistant' < 'user' alphabetically, so we sort user first explicitly.
+  return rows.sort(
+    (a, b) =>
+      a.created_at.localeCompare(b.created_at) ||
+      (a.role === b.role ? 0 : a.role === 'user' ? -1 : 1),
+  )
 }
 
 /** Sends a message to the ai-advisor Edge Function and returns the reply text. */

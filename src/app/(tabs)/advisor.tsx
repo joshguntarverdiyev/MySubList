@@ -51,7 +51,8 @@ export default function AdvisorScreen() {
     ;(async () => {
       try {
         const history = await loadRecentMessages(userId)
-        if (history.length > 0) setMessages(history)
+        // Always lead with the welcome bubble, then history in order.
+        setMessages([WELCOME, ...history])
       } catch {
         // Keep the welcome message on load failure.
       } finally {
