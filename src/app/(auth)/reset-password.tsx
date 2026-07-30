@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, ActivityIndicator, Keyboard, LayoutAnimation, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -23,11 +23,34 @@ export default function ResetPasswordScreen() {
   // The password-entry form (vs. the loading / invalid-link / success states).
   const showForm = hasSession === true && !done
 
+  // Track keyboard visibility + height ourselves (instead of KeyboardAvoidingView)
+  // for two reasons: (1) we dock the form above the keyboard only while it's open,
+  // and re-center it when it closes; (2) we listen ONLY to will/did-show & hide —
+  // never keyboardWillChangeFrame — so the AutoFill bar reflowing as focus moves
+  // between the two secure fields no longer nudges the layout (the "shake").
+  const [kbVisible, setKbVisible] = useState(false)
+  const [kbHeight, setKbHeight] = useState(0)
+
   useEffect(() => {
     ;(async () => {
       const { data } = await supabase.auth.getSession()
       setHasSession(!!data.session)
     })()
+  }, [])
+
+  useEffect(() => {
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    const showSub = Keyboard.addListener(showEvt, (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+      setKbHeight(e.endCoordinates.height)
+      setKbVisible(true)
+    })
+    const hideSub = Keyboard.addListener(hideEvt, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+      setKbVisible(false)
+    })
+    return () => { showSub.remove(); hideSub.remove() }
   }, [])
 
   async function handleSave() {
@@ -62,19 +85,17 @@ export default function ResetPasswordScreen() {
     setTimeout(() => router.replace('/(auth)/sign-in'), 1500)
   }
 
+  // Dock the form 20px above the keyboard only while it's open; otherwise
+  // (keyboard closed, or a transient loading / invalid / done state) center it.
+  const docked = showForm && kbVisible
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#F0EBFF' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={{ flex: 1, backgroundColor: '#F0EBFF' }}>
       <View
         style={{
           flex: 1,
-          // Dock the form to the bottom so it sits a fixed 20px above the keyboard
-          // (the first field auto-focuses, so the keyboard is always up here).
-          // Transient states (loading / invalid / done) stay centered.
-          justifyContent: showForm ? 'flex-end' : 'center',
-          paddingBottom: showForm ? 20 : insets.bottom + 32,
+          justifyContent: docked ? 'flex-end' : 'center',
+          paddingBottom: docked ? kbHeight + 20 : insets.bottom + 32,
           paddingHorizontal: 24,
         }}
       >
@@ -140,6 +161,6 @@ export default function ResetPasswordScreen() {
           </View>
         )}
       </View>
-    </KeyboardAvoidingView>
+    </View>
   )
 }
