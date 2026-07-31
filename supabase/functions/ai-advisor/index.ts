@@ -127,12 +127,16 @@ function getRenewalDatesForMonth(sub: Sub, year: number, month: number): Date[] 
         : sub.billing_period === "yearly"
         ? addYears
         : addMonths;
-    let d = scheduleStart;
+    // Anchor each occurrence off the original scheduleStart (step(start, n)),
+    // not off the previous clamped result — otherwise a Jan-31 monthly sub drifts
+    // to the 28th after February instead of Feb 28 → Mar 31 → Apr 30. Mirrors
+    // src/utils/renewalDates.ts so this stays in lockstep with the app.
     let steps = 0;
+    let d = scheduleStart;
     while (!isAfter(d, monthEnd) && steps < MAX_STEPS) {
       if (within(d)) dates.push(d);
-      d = step(d, 1);
       steps += 1;
+      d = step(scheduleStart, steps);
     }
   }
 
