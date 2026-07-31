@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function OnboardingStep2() {
@@ -27,7 +27,14 @@ export default function OnboardingStep2() {
         </Text>
       </Pressable>
 
-      <View className="flex-1 items-center px-6" style={{ paddingTop: insets.top + 56 }}>
+      {/* Content scrolls; the button below stays pinned. On tall screens
+          flexGrow + the flex-1 spacer keep the dots/button bottom-anchored
+          exactly as before (no scrolling); on SE the content scrolls and the
+          button remains visible. */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: insets.top + 56 }}
+      >
 
         {/* Headline — two-tone */}
         <Text
@@ -59,8 +66,10 @@ export default function OnboardingStep2() {
           <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#7C4DFF' }} />
           <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 1.5, borderColor: '#7C4DFF', opacity: 0.4 }} />
         </View>
+      </ScrollView>
 
-        {/* Next button */}
+      {/* Next button — pinned, always visible */}
+      <View style={{ alignItems: 'center', paddingBottom: insets.bottom + 24 }}>
         <Pressable
           onPress={() => router.push('/(onboarding)/step-3')}
           style={{
@@ -70,7 +79,6 @@ export default function OnboardingStep2() {
             backgroundColor: '#7C4DFF',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: insets.bottom + 24,
             shadowColor: '#7C4DFF',
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.22,

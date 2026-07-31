@@ -1,8 +1,5 @@
 import { Image } from 'expo-image';
-import { Dimensions, View } from 'react-native';
-
-const { width: W } = Dimensions.get('window');
-const p = (v: number) => Math.round((v * W) / 390);
+import { useWindowDimensions, View } from 'react-native';
 
 const shadow = {
   shadowColor: '#000',
@@ -32,34 +29,45 @@ const CARDS = [
 const DOTS = [[252, 238], [364, 360], [159, 584], [13, 441], [77, 267]];
 
 export function OrbitSection() {
+  // Art is authored on a 390×844 reference canvas. Scale by width as before, but
+  // on short screens (SE ~667pt) also compress by height so the constellation
+  // shrinks to fit between the title and the CTA instead of overlapping them.
+  // hf = 1 and dx = 0 on any device ≥700pt tall, so this is a no-op there.
+  const { width: W, height: H } = useWindowDimensions();
+  const hf = H < 700 ? H / 844 : 1;
+  const s = (W / 390) * hf;
+  const dx = (W - 390 * s) / 2; // recenter horizontally after shrinking
+  const sc = (v: number) => Math.round(v * s); // sizes + vertical (top)
+  const sx = (v: number) => Math.round(v * s + dx); // horizontal (left)
+
   return (
     <>
       {/* Orbit rings — outer centre (194, 411) */}
-      <View style={{ position: 'absolute', left: p(14), top: p(231), width: p(360), height: p(360), borderRadius: p(180), borderWidth: 1,   borderColor: 'rgba(124,77,255,0.15)' }} />
-      <View style={{ position: 'absolute', left: p(64), top: p(281), width: p(260), height: p(260), borderRadius: p(130), borderWidth: 1.5, borderColor: 'rgba(124,77,255,0.28)' }} />
+      <View style={{ position: 'absolute', left: sx(14), top: sc(231), width: sc(360), height: sc(360), borderRadius: sc(180), borderWidth: 1,   borderColor: 'rgba(124,77,255,0.15)' }} />
+      <View style={{ position: 'absolute', left: sx(64), top: sc(281), width: sc(260), height: sc(260), borderRadius: sc(130), borderWidth: 1.5, borderColor: 'rgba(124,77,255,0.28)' }} />
 
       {/* Center icon — 100px, centred on (194, 411) */}
       <Image
         source={require('../../../assets/welcome-screen/center-calendar-3d.png')}
-        style={{ position: 'absolute', left: p(144), top: p(361), width: p(100), height: p(100) }}
+        style={{ position: 'absolute', left: sx(144), top: sc(361), width: sc(100), height: sc(100) }}
         contentFit="contain"
       />
 
       {/* 6 orbit service icons at 2× size */}
       {ICONS.map(({ src, l, t, sz, r }, i) => (
-        <View key={i} style={[shadow, { position: 'absolute', left: p(l), top: p(t), width: p(sz), height: p(sz), transform: [{ rotate: r }] }]}>
-          <Image source={src} style={{ width: p(sz), height: p(sz) }} contentFit="contain" />
+        <View key={i} style={[shadow, { position: 'absolute', left: sx(l), top: sc(t), width: sc(sz), height: sc(sz), transform: [{ rotate: r }] }]}>
+          <Image source={src} style={{ width: sc(sz), height: sc(sz) }} contentFit="contain" />
         </View>
       ))}
 
       {/* 3 floating info cards */}
       {CARDS.map(({ src, l, t, w, h, r }, i) => (
-        <Image key={i} source={src} style={{ position: 'absolute', left: p(l), top: p(t), width: p(w), height: p(h), transform: [{ rotate: r }] }} contentFit="contain" />
+        <Image key={i} source={src} style={{ position: 'absolute', left: sx(l), top: sc(t), width: sc(w), height: sc(h), transform: [{ rotate: r }] }} contentFit="contain" />
       ))}
 
       {/* Decorative dots on outer ring circumference */}
       {DOTS.map(([l, t], i) => (
-        <View key={i} style={{ position: 'absolute', left: p(l), top: p(t), width: 8, height: 8, borderRadius: 4, backgroundColor: '#7C4DFF', opacity: 0.45 }} />
+        <View key={i} style={{ position: 'absolute', left: sx(l), top: sc(t), width: 8, height: 8, borderRadius: 4, backgroundColor: '#7C4DFF', opacity: 0.45 }} />
       ))}
     </>
   );
