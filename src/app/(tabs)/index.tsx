@@ -103,7 +103,7 @@ export default function HomeScreen() {
 
         {isLoading && subscriptions.length === 0 ? (
           <HomeSkeleton />
-        ) : error ? (
+        ) : error && subscriptions.length === 0 ? (
           <ErrorState onRetry={() => userId && fetchSubscriptions(userId)} />
         ) : subscriptions.length === 0 ? (
           <EmptyState />

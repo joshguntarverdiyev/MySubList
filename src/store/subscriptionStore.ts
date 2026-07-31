@@ -22,7 +22,15 @@ async function load(
     const subscriptions = await getUserSubscriptions(userId)
     set({ subscriptions, isLoading: false })
   } catch {
-    set({ error: 'Could not load your subscriptions.', isLoading: false })
+    // Don't blow away a working view: if we already have cached subscriptions, a
+    // failed refetch (e.g. offline) fails quietly and keeps showing them. Only
+    // surface the blocking error when there's nothing to show.
+    const hasData = useSubscriptionStore.getState().subscriptions.length > 0
+    set(
+      hasData
+        ? { isLoading: false }
+        : { error: 'Could not load your subscriptions.', isLoading: false }
+    )
   }
 }
 

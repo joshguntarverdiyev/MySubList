@@ -44,6 +44,19 @@ export const useProfileStore = create<ProfileState>((set) => ({
         .single(),
       supabase.auth.getUser(),
     ])
+
+    // Zombie-session guard: the profile row is gone (PGRST116 = no rows) AND the
+    // auth server confirms the user no longer exists (getUser returned no user).
+    // That means the account was deleted server-side while the JWT was still
+    // locally valid — sign out so authStore resets the stores and _layout routes
+    // to sign-in. A network failure yields a different error (not PGRST116), so
+    // being offline never signs the user out; a brand-new user whose profiles row
+    // is momentarily missing still has a valid getUser, so they're not touched.
+    if (error?.code === 'PGRST116' && !userData.user) {
+      await supabase.auth.signOut()
+      return
+    }
+
     const email = userData.user?.email ?? ''
     // The real name the user typed at sign-up lives in auth user_metadata. The
     // DB trigger that creates the profiles row can default full_name to the email
