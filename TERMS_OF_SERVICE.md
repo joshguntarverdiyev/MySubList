@@ -19,7 +19,7 @@ To use the App you must create an account with a valid email address. You are re
 ## 3. Free and Premium plans
 
 - **Free plan:** track up to **5 subscriptions** and send up to **5 AI Advisor messages per day**.
-- **Premium plan:** unlimited subscriptions and unlimited AI messages for **€3.99/month** or **€29.99/year**.
+- **Premium plan:** unlimited subscriptions and up to 50 AI messages per day for **€3.99/month** or **€29.99/year**.
 
 Premium subscriptions are billed through the **Apple App Store** and are subject to Apple's terms. Your subscription renews automatically unless cancelled at least 24 hours before the end of the current period. You can manage or cancel your subscription in your App Store account settings.
 
@@ -58,6 +58,10 @@ We may update these Terms from time to time. The "Effective date" above reflects
 
 These Terms are governed by the laws of **Italy**, without regard to conflict-of-law rules. Any disputes shall be subject to the competent courts of Italy, without prejudice to any mandatory consumer protections available to you under the law of your country of residence.
 
-## 11. Contact
+## 11. Trademarks
+
+All third-party product names, logos, and brands are the property of their respective owners. Use of them does not imply affiliation with or endorsement by MySubList.
+
+## 12. Contact
 
 Questions about these Terms? Email us at **hello@mysublist.app**.

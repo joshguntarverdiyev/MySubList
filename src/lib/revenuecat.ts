@@ -62,3 +62,17 @@ export async function configureRevenueCat(userId: string) {
     if (__DEV__) console.log('getCustomerInfo error:', e)
   }
 }
+
+/**
+ * Detach the current user from RevenueCat on sign-out, so the next account's
+ * entitlements don't resolve against the previous appUserID. Guarded exactly
+ * like configureRevenueCat — a no-op in Expo Go / non-iOS / before configure.
+ */
+export async function logOutRevenueCat() {
+  if (Platform.OS !== 'ios' || !IOS_KEY || IN_EXPO_GO || !configured) return
+  try {
+    await Purchases.logOut()
+  } catch (e) {
+    if (__DEV__) console.log('RC logOut error:', e)
+  }
+}

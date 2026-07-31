@@ -28,9 +28,19 @@ export default function AnalyticsScreen() {
   const subs = useSubscriptionStore((s) => s.subscriptions)
   const currency = useProfileStore((s) => s.currency)
   const rates = useRatesStore((s) => s.rates)
+  const ratesLoaded = useRatesStore((s) => s.loaded)
   const [range, setRange] = useState<Period>('monthly')
   const [filterOpen, setFilterOpen] = useState(false)
   const rangeLabel = PERIOD_OPTIONS.find((o) => o.value === range)?.label ?? ''
+
+  // Every figure here is currency-converted; if a foreign-currency sub has no
+  // available rate, convert() would sum it 1:1 and every number would be wrong.
+  // Suppress the whole view instead of showing misleading totals.
+  const ratesUnavailable =
+    subs.some((s) => s.currency !== currency) &&
+    (!ratesLoaded ||
+      rates[currency] == null ||
+      subs.some((s) => s.currency !== currency && rates[s.currency] == null))
 
   const total = calculateSpendByPeriod(subs, range, currency, rates)
   const changePct = getSpendChange(subs, range, currency, rates)
@@ -74,6 +84,13 @@ export default function AnalyticsScreen() {
           <Ionicons name="stats-chart-outline" size={40} color="#9CA3AF" />
           <Text className="mt-3 text-center text-[15px] text-[#6B7280]">
             Add subscriptions to see your spending analytics.
+          </Text>
+        </View>
+      ) : ratesUnavailable ? (
+        <View className="flex-1 items-center justify-center px-10">
+          <Ionicons name="cloud-offline-outline" size={40} color="#9CA3AF" />
+          <Text className="mt-3 text-center text-[15px] text-[#6B7280]">
+            Totals unavailable — exchange rates offline.
           </Text>
         </View>
       ) : (

@@ -59,7 +59,7 @@ export default function ProfileScreen() {
             <View className="flex-1 pr-3">
               <Text className="text-[15px] font-bold text-[#1A1A2E]">⭐ Upgrade to Pro</Text>
               <Text className="mt-0.5 text-[13px] text-[#6B7280]">
-                Unlock unlimited subscriptions and AI advice
+                Unlock unlimited subscriptions and 50 AI messages per day
               </Text>
             </View>
             <Text className="text-[14px] font-bold text-[#7C4DFF]">Upgrade →</Text>

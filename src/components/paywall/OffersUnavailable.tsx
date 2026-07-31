@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Linking } from 'react-native'
+import { INFO } from '@/constants/legal'
 
 interface Props {
   onRetry: () => void
@@ -26,6 +27,23 @@ export default function OffersUnavailable({ onRetry, onRestore }: Props) {
       <Text onPress={onRestore} className="mt-4 text-[14px] text-[#6B7280]">
         Restore Purchases
       </Text>
+
+      {/* Terms + Privacy stay reachable even when offerings fail (App Store 3.1.2). */}
+      <View className="mt-4 flex-row items-center justify-center">
+        <Text
+          onPress={() => INFO.terms.fullUrl && Linking.openURL(INFO.terms.fullUrl)}
+          className="px-2 text-[11px] font-semibold text-[#7C4DFF]"
+        >
+          Terms of Use
+        </Text>
+        <Text className="text-[11px] text-[#9CA3AF]">·</Text>
+        <Text
+          onPress={() => INFO.privacy.fullUrl && Linking.openURL(INFO.privacy.fullUrl)}
+          className="px-2 text-[11px] font-semibold text-[#7C4DFF]"
+        >
+          Privacy Policy
+        </Text>
+      </View>
     </View>
   )
 }

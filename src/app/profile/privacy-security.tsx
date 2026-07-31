@@ -1,12 +1,7 @@
 import { View, Text, ScrollView, Pressable, Alert, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import * as SecureStore from 'expo-secure-store'
 import { Ionicons } from '@expo/vector-icons'
-import { deleteAccount } from '@/services/account'
-import { cancelAllRenewalReminders } from '@/services/notifications'
-import { useProfileStore } from '@/store/profileStore'
-import { useSubscriptionStore } from '@/store/subscriptionStore'
 import SettingsCard from '@/components/profile/SettingsCard'
 import SettingsRow from '@/components/profile/SettingsRow'
 
@@ -21,30 +16,6 @@ export default function PrivacySecurityScreen() {
     } catch {
       Alert.alert('Unable to open', fallback)
     }
-  }
-
-  async function runDelete() {
-    try {
-      await cancelAllRenewalReminders()
-      await deleteAccount()
-      useProfileStore.getState().reset()
-      useSubscriptionStore.getState().reset()
-      await SecureStore.deleteItemAsync('onboarding_complete')
-      router.replace('/(onboarding)/welcome')
-    } catch {
-      Alert.alert('Error', 'Something went wrong. Please try again.')
-    }
-  }
-
-  function confirmDelete() {
-    Alert.alert(
-      'Delete Account',
-      'This will permanently delete your account and all your subscription data. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: runDelete },
-      ],
-    )
   }
 
   return (
@@ -71,10 +42,6 @@ export default function PrivacySecurityScreen() {
         <SettingsCard title="YOUR RIGHTS">
           <SettingsRow icon="download-outline" label="Privacy Policy" subtitle="Read our full privacy policy" divider onPress={() => openExternal('https://mysublist.app/privacy', 'Visit mysublist.app/privacy')} />
           <SettingsRow icon="mail-outline" label="Data Request" subtitle="Request a copy of your data" onPress={() => openExternal('mailto:hello@mysublist.app?subject=Data Request', 'No mail app is set up. Email us at hello@mysublist.app')} />
-        </SettingsCard>
-
-        <SettingsCard title="DANGER ZONE">
-          <SettingsRow icon="trash-outline" label="Delete Account" subtitle="Permanently delete your account and all data" labelColor="#EF4444" iconColor="#EF4444" iconBg="#FEF2F2" onPress={confirmDelete} />
         </SettingsCard>
       </ScrollView>
     </View>

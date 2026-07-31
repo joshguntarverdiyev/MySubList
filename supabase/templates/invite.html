@@ -43,16 +43,29 @@
               <p style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#374151;text-align:center;">You&#39;ve been invited to join MySubList &mdash; the smarter way to track subscriptions and stop paying for what you don&#39;t use.</p>
               <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#374151;text-align:center;">Accept your invitation to set up your account.</p>
 
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="text-align:center;">
-                <!--[if mso]>
-                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:52px;v-text-anchor:middle;width:480px;" arcsize="24%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
-                <w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:600;">Accept Invitation</center>
-                </v:roundrect>
-                <![endif]-->
-                <!--[if !mso]><!-- -->
-                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#7C4DFF;border-radius:12px;padding:16px 40px;font-size:16px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:none;">Accept Invitation</a>
-                <!--<![endif]-->
-              </td></tr></table>
+              <!-- Button -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="text-align:center;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:52px;v-text-anchor:middle;width:225px;" arcsize="24%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
+                    <w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:600;">Accept Invitation</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-- -->
+                    <div align="center">
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                        <tr>
+                          <td align="center" bgcolor="#7C4DFF" style="background:#7C4DFF;border-radius:12px;">
+                            <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;text-align:center;">Accept Invitation</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
 
               <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#6B7280;text-align:center;">Button not working? <a href="{{ .ConfirmationURL }}" style="color:#7C4DFF;font-weight:600;">Click here instead</a>.</p>
             </td>

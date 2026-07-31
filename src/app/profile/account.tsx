@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, ScrollView, Pressable } from 'react-native'
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -14,6 +14,7 @@ export default function AccountScreen() {
   const insets = useSafeAreaInsets()
   const email = useProfileStore((s) => s.email)
   const fullName = useProfileStore((s) => s.full_name)
+  const isPremium = useProfileStore((s) => s.is_premium)
   const [emailOpen, setEmailOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -39,6 +40,15 @@ export default function AccountScreen() {
           <SettingsRow icon="person-outline" label="Username" subtitle={displayName} divider onPress={() => setUsernameOpen(true)} />
           <SettingsRow icon="mail-outline" label="Email" subtitle={email} divider onPress={() => setEmailOpen(true)} />
           <SettingsRow icon="lock-closed-outline" label="Change Password" divider onPress={() => setPasswordOpen(true)} />
+          {isPremium ? (
+            <SettingsRow
+              icon="card-outline"
+              label="Manage Subscription"
+              subtitle="Cancel or change your plan in the App Store"
+              divider
+              onPress={() => Linking.openURL('itms-apps://apps.apple.com/account/subscriptions')}
+            />
+          ) : null}
           <SettingsRow icon="shield-checkmark-outline" label="Privacy & Security" onPress={() => router.push('/profile/privacy-security')} />
         </SettingsCard>
       </ScrollView>

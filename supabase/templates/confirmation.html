@@ -20,7 +20,6 @@
   </style>
 </head>
 <body style="margin:0;padding:0;background:#F8F8F8;">
-  <!-- Preheader (hidden) -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#F8F8F8;font-size:1px;line-height:1px;">Confirm your email to finish setting up MySubList. &#8203;&#8203;&#8203;&#8203;&#8203;&#8203;</div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F8F8;">
@@ -31,7 +30,6 @@
           <!-- Header -->
           <tr>
             <td style="padding:40px 40px 8px;text-align:center;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-              <!-- TODO: replace the src below with your public app-icon PNG URL (e.g. a Supabase Storage public URL) -->
               <img src="https://mysublist.app/app-icon.png" width="56" height="56" alt="MySubList" style="display:inline-block;border-radius:14px;vertical-align:middle;" />
               <div style="margin-top:12px;font-size:20px;font-weight:700;color:#111111;">MySubList</div>
               <div style="margin-top:2px;font-size:13px;color:#6B7280;">Manage subscriptions smarter.</div>
@@ -46,18 +44,29 @@
               <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#374151;text-align:center;">Please confirm your email address to finish creating your account.</p>
 
               <!-- Button -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="text-align:center;">
-                <!--[if mso]>
-                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:52px;v-text-anchor:middle;width:480px;" arcsize="24%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
-                <w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:600;">Confirm Email</center>
-                </v:roundrect>
-                <![endif]-->
-                <!--[if !mso]><!-- -->
-                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#7C4DFF;border-radius:12px;padding:16px 40px;font-size:16px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:none;">Confirm Email</a>
-                <!--<![endif]-->
-              </td></tr></table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="text-align:center;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:52px;v-text-anchor:middle;width:200px;" arcsize="24%" strokecolor="#7C4DFF" fillcolor="#7C4DFF">
+                    <w:anchorlock/><center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:600;">Confirm Email</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-- -->
+                    <div align="center">
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                        <tr>
+                          <td align="center" bgcolor="#7C4DFF" style="background:#7C4DFF;border-radius:12px;">
+                            <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;text-align:center;">Confirm Email</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
 
-              <!-- Fallback link -->
               <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#6B7280;text-align:center;">Button not working? <a href="{{ .ConfirmationURL }}" style="color:#7C4DFF;font-weight:600;">Click here instead</a>.</p>
             </td>
           </tr>

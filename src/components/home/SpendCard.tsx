@@ -6,9 +6,29 @@ interface SpendCardProps {
   monthlySpend: string
   activeCount: number
   note?: string | null
+  /** When true, spending totals can't be computed (exchange rates offline). */
+  ratesUnavailable?: boolean
 }
 
-export default function SpendCard({ totalPaid, monthlySpend, activeCount, note }: SpendCardProps) {
+export default function SpendCard({ totalPaid, monthlySpend, activeCount, note, ratesUnavailable }: SpendCardProps) {
+  if (ratesUnavailable) {
+    return (
+      <View
+        className="bg-white rounded-[24px] mx-6 px-6 py-6"
+        style={{ shadowColor: '#7C4DFF', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 32, elevation: 6 }}
+      >
+        <View className="flex-row items-center gap-x-2">
+          <Ionicons name="cloud-offline-outline" size={20} color="#9CA3AF" />
+          <Text className="text-[15px] font-semibold text-[#6B7280]">Totals unavailable</Text>
+        </View>
+        <Text className="mt-1 text-[13px] text-[#9CA3AF]">Exchange rates offline — spending totals can’t be calculated right now.</Text>
+        <View className="h-px bg-[#E5E7EB] mt-4 mb-4" />
+        <Text style={{ fontSize: 12, color: '#6B7280', marginBottom: 4 }}>Active Subscriptions</Text>
+        <Text style={{ fontSize: 17, fontWeight: '600', color: '#1A1A2E' }}>{activeCount}</Text>
+      </View>
+    )
+  }
+
   return (
     <View
       className="bg-white rounded-[24px] mx-6 px-6 pt-5 pb-4"

@@ -65,8 +65,23 @@ export default function HomeScreen() {
     }
   }, [subscriptions, rates, currency])
 
+  // Totals are meaningless if a foreign-currency sub can't be converted (rates
+  // offline or missing for a currency): convert() would silently sum it 1:1,
+  // producing a wildly wrong number. Suppress the aggregate in that case rather
+  // than dress a 1:1 sum up as "approx.".
+  const ratesUnavailable =
+    hasForeignCurrency &&
+    (!ratesLoaded ||
+      rates[currency] == null ||
+      subscriptions.some((s) => s.currency !== currency && rates[s.currency] == null))
+
   // Only note conversion when a sub is in a currency other than the profile's.
-  const spendNote = hasForeignCurrency ? (ratesLoaded && ratesDate ? `rates as of ${ratesDate}` : 'approx.') : null
+  const spendNote =
+    !hasForeignCurrency || ratesUnavailable
+      ? null
+      : ratesDate
+        ? `rates as of ${ratesDate}`
+        : 'approx.'
 
   const VISIBLE_LIMIT = 4
   const visible = showAll ? rowItems : rowItems.slice(0, VISIBLE_LIMIT)
@@ -94,7 +109,7 @@ export default function HomeScreen() {
           <EmptyState />
         ) : (
           <>
-            <SpendCard totalPaid={totalPaid} monthlySpend={monthlySpend} activeCount={subscriptions.length} note={spendNote} />
+            <SpendCard totalPaid={totalPaid} monthlySpend={monthlySpend} activeCount={subscriptions.length} note={spendNote} ratesUnavailable={ratesUnavailable} />
 
             <View className="mt-4">
               <SavingsCard

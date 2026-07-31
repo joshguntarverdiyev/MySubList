@@ -4,7 +4,7 @@
 
 Always follow the product plan in **PRD.md** and the connected **SKILL_UI_UX.md** and **SKILL_REACT_NATIVE.md** skill files.
 
-MySubList helps users track digital subscriptions, see renewals on a calendar, and get AI-powered saving advice. Freemium (RevenueCat): free = 5 subs + 5 AI messages/day; premium (€3.99/mo, €29.99/yr) = unlimited.
+MySubList helps users track digital subscriptions, see renewals on a calendar, and get AI-powered saving advice. Freemium (RevenueCat): free = 5 subs + 5 AI messages/day; premium (€3.99/mo, €29.99/yr) = unlimited subscriptions + 50 AI messages/day.
 
 ---
 

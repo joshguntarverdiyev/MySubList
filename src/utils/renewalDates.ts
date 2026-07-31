@@ -28,11 +28,15 @@ export function computeNextRenewalDate(
     : billingPeriod === 'yearly' ? addYears
     : addMonths
 
+  // Anchor every occurrence off the ORIGINAL start (step(start, n)), never off
+  // the previous result. date-fns clamps month overflow, so re-feeding the
+  // clamped date would make a Jan-31 sub drift to the 28th forever after
+  // February. Computing from start each time keeps Feb 28 → Mar 31 → Apr 30.
   let next = start
-  let steps = 0
-  while (isBefore(next, floor) && steps < MAX_ADVANCE) {
-    next = step(next, 1)
-    steps += 1
+  let n = 0
+  while (isBefore(next, floor) && n < MAX_ADVANCE) {
+    n += 1
+    next = step(start, n)
   }
   return next
 }
@@ -96,12 +100,15 @@ export function getRenewalDatesForMonth(
       sub.billing_period === 'weekly' ? addWeeks
       : sub.billing_period === 'yearly' ? addYears
       : addMonths
-    let d = scheduleStart
+    // Anchor each occurrence off the original scheduleStart (step(start, n)),
+    // not off the previous clamped result — otherwise a Jan-31 monthly sub drifts
+    // to the 28th after February instead of Feb 28 → Mar 31 → Apr 30.
     let steps = 0
+    let d = scheduleStart
     while (!isAfter(d, monthEnd) && steps < MAX_STEPS) {
       if (within(d)) dates.push(d)
-      d = step(d, 1)
       steps += 1
+      d = step(scheduleStart, steps)
     }
   }
 

@@ -25,7 +25,7 @@ const WELCOME: ChatMessage = {
 }
 
 const FREE_LIMIT_MSG =
-  "You've reached your 5 message daily limit. Upgrade to Premium for unlimited AI advice."
+  "You've reached your 5 message daily limit. Upgrade to Premium for 50 AI messages per day."
 const PRO_LIMIT_MSG = "You've reached today's message limit. Please try again tomorrow."
 const ERROR_MSG = 'Something went wrong. Try again.'
 

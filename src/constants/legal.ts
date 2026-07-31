@@ -24,11 +24,11 @@ export const HELP_FAQS: FaqItem[] = [
   },
   {
     q: 'How does the AI Advisor work and are there limits?',
-    a: 'The AI Advisor reads your subscriptions and suggests ways to save. Free users get 5 messages per day; Premium users get unlimited messages.',
+    a: 'The AI Advisor reads your subscriptions and suggests ways to save. Free users get 5 messages per day; Premium users get 50 messages per day.',
   },
   {
     q: 'What is the difference between Free and Premium?',
-    a: 'Free includes up to 5 subscriptions and 5 AI messages per day. Premium unlocks unlimited subscriptions and unlimited AI advice for €3.99/mo or €29.99/yr.',
+    a: 'Free includes up to 5 subscriptions and 5 AI messages per day. Premium unlocks unlimited subscriptions and 50 AI messages per day for €3.99/mo or €29.99/yr.',
   },
   {
     q: 'How does currency and FX conversion work?',

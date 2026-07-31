@@ -9,7 +9,7 @@ MySubList helps people track all their digital subscriptions in one place, see u
 - **Target user:** budget-conscious, smartphone-native people aged 22–45 who pay for multiple digital subscriptions (Netflix, Spotify, Adobe, Amazon Prime…) and want control over spending.
 - **Monetization:** Freemium via **RevenueCat**.
   - **Free:** up to **5 subscriptions**, **5 AI messages/day**.
-  - **Premium (€3.99/mo or €29.99/yr):** unlimited subscriptions + unlimited AI messages.
+  - **Premium (€3.99/mo or €29.99/yr):** unlimited subscriptions + up to 50 AI messages/day.
   - `profiles.is_premium` is a cache; **RevenueCat is the source of truth**. All limits enforced **server-side**.
 
 ## 2. Screens (14)
